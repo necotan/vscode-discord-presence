@@ -20,6 +20,7 @@ Behavior marked **[live test]** depends on the Discord client and has not been c
 A VS Code extension that shows what the user is working on as a Discord activity: the file name, the language with its icon, the workspace name, and the elapsed time.
 
 - **Name (repository and package)**: `vscode-discord-presence`
+- **Discord application name**: `Visual Studio Code`, shown as the activity title (e.g. "Playing Visual Studio Code"). Registered in the Discord Developer Portal; its Application ID is `DEFAULT_CLIENT_ID`.
 - **Users**: the author and friends.
 - **Distribution**: a `.vsix` file installed manually. The extension is not published to the Marketplace (see 12).
 
@@ -135,7 +136,7 @@ export const LANGUAGES: Record<string, { name: string; icon?: string }> = {
 ### 6.2 Icons
 
 - Stored in the repository as `assets/icons/<icon>.png` and passed to Discord as GitHub raw URLs.
-  - Base URL: `https://raw.githubusercontent.com/<github-user>/vscode-discord-presence/main/assets/icons`, defined once as `ICON_BASE_URL` in `src/config.ts`.
+  - Base URL: `https://raw.githubusercontent.com/necotan/vscode-discord-presence/main/assets/icons`, defined once as `ICON_BASE_URL` in `src/config.ts`.
   - The repository must be public, or Discord cannot fetch the images.
 - A language without `icon` uses `vscode.png`. The extension does not check whether a URL exists (that would need a network request).
 - Format: PNG, square, about 512×512.
@@ -248,7 +249,6 @@ Each milestone ends with manual test steps for the user. The next one starts aft
 - **[live test]** Which activity wins when several windows send with the same Client ID (5.5).
 - **[live test]** Whether external image URLs display, and Discord's cache time after an image changes (6.2).
 - Webviews, custom editors (image preview, etc.), notebooks, diff editors, and the output panel: idle display, or keep the last file?
-- The Discord application name (the activity title, e.g. "Visual Studio Code" or "VS Code").
 - Language of the Discord text and setting descriptions: English only for now. Whether to localize with `package.nls.*.json` and `vscode.l10n`.
 - `toggle` writes the user setting; if a workspace setting overrides `enabled`, the toggle has no visible effect.
 

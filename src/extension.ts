@@ -1,26 +1,31 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { getClientId } from './config';
+import { DiscordIpcClient } from './ipc/discordIpc';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+let client: DiscordIpcClient | undefined;
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vscode-discord-presence" is now active!');
+export function activate(context: vscode.ExtensionContext): void {
+	const logger = vscode.window.createOutputChannel('Discord Presence', { log: true });
+	context.subscriptions.push(logger);
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('vscode-discord-presence.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from vscode-discord-presence!');
+	const clientId = getClientId();
+	if (!clientId) {
+		logger.warn('Client ID is not set. Set DEFAULT_CLIENT_ID in src/config.ts');
+		return;
+	}
+
+	const startedAt = Date.now();
+	const ipc = new DiscordIpcClient({
+		clientId,
+		logger,
+		// マイルストーン1の疎通確認用の固定表示。マイルストーン2で presenceController 経由の送信に置き換える
+		onReady: () => ipc.setActivity({ details: 'Connection test', timestamps: { start: startedAt } }),
 	});
-
-	context.subscriptions.push(disposable);
+	ipc.start();
+	client = ipc;
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+export async function deactivate(): Promise<void> {
+	await client?.stop();
+	client = undefined;
+}

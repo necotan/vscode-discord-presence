@@ -1,0 +1,10 @@
+out
+dist
+node_modules
+.vscode-test/
+*.vsix
+
+# documentation (only the specs in docs/ are tracked)
+/docs/*
+!/docs/requirements.md
+!/docs/discord-ipc.md

@@ -102,7 +102,9 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 
 - Focus is read from `vscode.window.state.focused` and `vscode.window.onDidChangeWindowState`.
 - `idleTimeoutMinutes` is 0: idle display as soon as focus is lost.
-- The active editor is `vscode.window.activeTextEditor`, followed by `onDidChangeActiveTextEditor`. How to treat webviews, custom editors, notebooks, and the output panel is an open question (see 14).
+- The active editor is `vscode.window.activeTextEditor`, followed by `onDidChangeActiveTextEditor`.
+- Output panel: focusing it makes `activeTextEditor` an `output:` URI (confirmed in VS Code 1.144), which would show an internal channel name. Editors with the `output` scheme are ignored and the last file stays displayed (`IGNORED_SCHEMES` in `presenceController.ts`).
+- How to treat webviews, custom editors, notebooks, and diff editors is an open question (see 14).
 
 ### 5.4 Elapsed Time
 
@@ -136,7 +138,7 @@ export const LANGUAGES: Record<string, { name: string; icon?: string }> = {
 ### 6.2 Icons
 
 - Stored in the repository as `assets/icons/<icon>.png` and passed to Discord as GitHub raw URLs.
-  - Base URL: `https://raw.githubusercontent.com/necotan/vscode-discord-presence/main/assets/icons`, defined once as `ICON_BASE_URL` in `src/config.ts`.
+  - Base URL: `https://raw.githubusercontent.com/necotan/vscode-discord-presence/main/assets/icons`, defined once as `ICON_BASE_URL` in `src/presence/activityBuilder.ts` (not in `config.ts`, which imports `vscode`).
   - The repository must be public, or Discord cannot fetch the images.
 - A language without `icon` uses `vscode.png`. The extension does not check whether a URL exists (that would need a network request).
 - Format: PNG, square, about 512×512.
@@ -196,14 +198,14 @@ vscode-discord-presence/
 ├── assets/icons/                  # language icons and vscode.png
 └── src/
     ├── extension.ts               # activate / deactivate, wiring only
-    ├── config.ts                  # settings, DEFAULT_CLIENT_ID, ICON_BASE_URL
+    ├── config.ts                  # settings, DEFAULT_CLIENT_ID
     ├── languages.ts               # languageId → display name and icon
     ├── ipc/
     │   ├── getIpcPath.ts          # pipe path per OS (Windows only for now)
     │   ├── frame.ts               # frame encode/decode with buffering (pure)
     │   └── discordIpc.ts          # connect, handshake, send, reconnect
     ├── presence/
-    │   ├── activityBuilder.ts     # state + settings → activity (pure)
+    │   ├── activityBuilder.ts     # state + settings → activity (pure), ICON_BASE_URL
     │   └── presenceController.ts  # editor and focus events, idle, debounce, throttle
     └── test/                      # unit tests for frame and activityBuilder
 ```
@@ -248,7 +250,7 @@ Each milestone ends with manual test steps for the user. The next one starts aft
 - **[live test]** Minimum string length Discord accepts (5.1).
 - **[live test]** Which activity wins when several windows send with the same Client ID (5.5).
 - **[live test]** Whether external image URLs display, and Discord's cache time after an image changes (6.2).
-- Webviews, custom editors (image preview, etc.), notebooks, diff editors, and the output panel: idle display, or keep the last file?
+- Webviews, custom editors (image preview, etc.), notebooks, and diff editors: idle display, or keep the last file? (The output panel is decided in 5.3.)
 - Language of the Discord text and setting descriptions: English only for now. Whether to localize with `package.nls.*.json` and `vscode.l10n`.
 - `toggle` writes the user setting; if a workspace setting overrides `enabled`, the toggle has no visible effect.
 

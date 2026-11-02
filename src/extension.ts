@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
 import { getClientId } from './config';
 import { DiscordIpcClient } from './ipc/discordIpc';
+import { PresenceController } from './presence/presenceController';
 
 let client: DiscordIpcClient | undefined;
+let controller: PresenceController | undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
 	const logger = vscode.window.createOutputChannel('Discord Presence', { log: true });
@@ -14,18 +16,16 @@ export function activate(context: vscode.ExtensionContext): void {
 		return;
 	}
 
-	const startedAt = Date.now();
-	const ipc = new DiscordIpcClient({
-		clientId,
-		logger,
-		// マイルストーン1の疎通確認用の固定表示。マイルストーン2で presenceController 経由の送信に置き換える
-		onReady: () => ipc.setActivity({ details: 'Connection test', timestamps: { start: startedAt } }),
-	});
+	const presence = new PresenceController(Date.now(), (activity) => ipc.setActivity(activity));
+	const ipc = new DiscordIpcClient({ clientId, logger, onReady: () => presence.handleReady() });
 	ipc.start();
+	controller = presence;
 	client = ipc;
 }
 
 export async function deactivate(): Promise<void> {
+	controller?.dispose();
+	controller = undefined;
 	await client?.stop();
 	client = undefined;
 }

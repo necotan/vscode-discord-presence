@@ -34,7 +34,7 @@ The specs are the source of truth for what to build; read the relevant section b
 ## Layout
 
 - `src/extension.ts`: `activate` / `deactivate`; wires the modules together only.
-- `src/config.ts`: reads settings; holds `DEFAULT_CLIENT_ID` and `ICON_BASE_URL`.
+- `src/config.ts`: reads settings; holds `DEFAULT_CLIENT_ID`. `ICON_BASE_URL` is in `activityBuilder.ts`, which must not import `config.ts` (it imports `vscode`).
 - `src/languages.ts`: `languageId` → display name and icon name.
 - `src/ipc/`: Discord IPC client (`getIpcPath.ts`, `frame.ts`, `discordIpc.ts`).
 - `src/presence/`: `activityBuilder.ts` (pure) and `presenceController.ts` (VS Code events, idle, throttling).

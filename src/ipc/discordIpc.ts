@@ -79,8 +79,9 @@ export class DiscordIpcClient {
 		}
 	}
 
-	setActivity(activity: Activity | undefined): void {
-		this.sendSetActivity(activity);
+	// READY 前は送らずに false を返す。呼び出し側は onReady で送り直す
+	setActivity(activity: Activity | undefined): boolean {
+		return this.sendSetActivity(activity) !== undefined;
 	}
 
 	private async connect(): Promise<void> {

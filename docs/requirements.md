@@ -114,10 +114,15 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 
 ### 5.5 Multiple Windows
 
-- Every window connects to Discord on its own.
-- **The last focused window is shown.** When a window gains focus, it sends its activity at once (still through the throttle in `discord-ipc.md` §6), overwriting the others.
-- A window that loses focus does not clear the activity, so it does not erase what another window shows. Its idle timer still runs.
-- Which activity Discord shows when several processes send `SET_ACTIVITY` with the same Client ID is **[live test]**. If the latest one does not win, change the design (for example, a window that loses focus closes its connection) and update this section.
+- **The last focused window is shown, and only that window is connected to Discord** (`src/presence/windowLeader.ts`).
+  - Reason (confirmed with two windows): when several connections use the same Client ID, Discord shows only the activity of the connection made first. Activities sent later by other connections are accepted without an error but not shown.
+- When a window gains focus, it writes its window ID to `context.globalState` (key `leaderWindowId`). It waits 1.5 s, then connects if the ID is still its own, and sends its activity after `READY`.
+- Every window checks `leaderWindowId` every 1 s. A connected window whose ID is no longer stored clears its activity and disconnects (`discord-ipc.md` §8).
+  - `globalState` written by one window was visible to another within the 2 s polling interval of the test (confirmed in VS Code 1.144).
+  - The 1.5 s wait lets the previous window disconnect first, so the new connection is the only one.
+- The connected window keeps its connection after losing focus to another app, and switches to the idle display after `idleTimeoutMinutes` (5.3). Windows that are not connected send nothing, so they never overwrite the display.
+- A window that has never been focused since it started does not connect.
+- Switching windows reconnects each time (about 0.3 s for the handshake in testing).
 
 ## 6. Language Names and Icons
 
@@ -181,6 +186,7 @@ The template command `vscode-discord-presence.helloWorld` is removed in mileston
 | Discord sends `CLOSE` (e.g. invalid Client ID) | Log its code and message, treat as disconnected, retry every 15 s. |
 | `SET_ACTIVITY` returns `evt: "ERROR"` | Log it. Do not retry the same activity. |
 | `enabled` is false | No connection and no retries. |
+| Another VS Code window is focused | Clear the activity and close the pipe; no retries until this window is focused again (5.5). |
 | `deactivate` | Clear the activity, then close the pipe (`discord-ipc.md` §8). |
 
 - No error may escape from an event handler or a timer. Catch and log every connection and protocol error.
@@ -206,7 +212,8 @@ vscode-discord-presence/
     │   └── discordIpc.ts          # connect, handshake, send, reconnect
     ├── presence/
     │   ├── activityBuilder.ts     # state + settings → activity (pure), ICON_BASE_URL
-    │   └── presenceController.ts  # editor and focus events, idle, debounce, throttle
+    │   ├── presenceController.ts  # editor and focus events, idle, debounce, throttle
+    │   └── windowLeader.ts        # which window is connected (globalState)
     └── test/                      # unit tests for frame and activityBuilder
 ```
 
@@ -248,7 +255,6 @@ Each milestone ends with manual test steps for the user. The next one starts aft
 ## 14. Open Questions
 
 - **[live test]** Minimum string length Discord accepts (5.1).
-- **[live test]** Which activity wins when several windows send with the same Client ID (5.5).
 - **[live test]** Whether external image URLs display, and Discord's cache time after an image changes (6.2).
 - Webviews, custom editors (image preview, etc.), notebooks, and diff editors: idle display, or keep the last file? (The output panel is decided in 5.3.)
 - Language of the Discord text and setting descriptions: English only for now. Whether to localize with `package.nls.*.json` and `vscode.l10n`.

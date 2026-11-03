@@ -61,6 +61,8 @@ export class DiscordIpcClient {
 			return;
 		}
 		this.running = true;
+		// stop がクリアの応答を待っている間に呼ばれた場合、古い接続を残さない
+		this.closeSocket();
 		void this.connect();
 	}
 
@@ -68,7 +70,10 @@ export class DiscordIpcClient {
 		this.running = false;
 		this.clearRetryTimer();
 		await this.clearActivityAndWait();
-		this.closeSocket();
+		// 応答を待つ間に start された場合は、新しい接続を閉じない
+		if (!this.running) {
+			this.closeSocket();
+		}
 	}
 
 	reconnect(): void {

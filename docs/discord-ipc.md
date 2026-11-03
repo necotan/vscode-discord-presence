@@ -43,6 +43,8 @@ Discord does not publish a full specification of this local IPC. The format belo
 3. Wait for a FRAME with `cmd: "DISPATCH"` and `evt: "READY"`. Only then is the client connected; send the current activity.
 4. If CLOSE arrives instead (for example, an invalid Client ID), log `code` and `message` and treat it as a disconnect (7).
 
+With several connections using the same Client ID, Discord shows only the activity of the connection made first (confirmed with two windows). The extension therefore keeps a single connection across windows (`requirements.md` §5.5).
+
 Until `READY`, activity updates are not sent. `discordIpc.ts` drops them; `presenceController.ts` keeps the latest state and sends it from the `onReady` callback.
 
 ## 4. Commands

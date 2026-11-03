@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { getPresenceSettings } from '../config';
+import { getIdleTimeoutMs, getPresenceSettings } from '../config';
 import type { Activity } from '../ipc/discordIpc';
 import { buildActivity, EditorInfo } from './activityBuilder';
 
@@ -15,36 +15,63 @@ export class PresenceController implements vscode.Disposable {
 	private readonly disposables: vscode.Disposable[] = [];
 	private debounceTimer: NodeJS.Timeout | undefined;
 	private throttleTimer: NodeJS.Timeout | undefined;
+	private idleTimer: NodeJS.Timeout | undefined;
 	private lastSentJson: string | undefined;
 	private lastSentAt = 0;
 	private editor: EditorInfo | undefined;
+	private idle = false;
 
 	constructor(
 		private readonly startedAt: number,
 		private readonly sendActivity: (activity: Activity) => boolean,
 	) {
 		this.updateEditor(vscode.window.activeTextEditor);
-		this.disposables.push(vscode.window.onDidChangeActiveTextEditor((editor) => {
-			if (this.updateEditor(editor)) {
-				this.requestUpdate();
-			}
-		}));
+		if (!vscode.window.state.focused) {
+			this.startIdleTimer();
+		}
+		this.disposables.push(
+			vscode.window.onDidChangeActiveTextEditor((editor) => this.handleEditorChange(editor)),
+			vscode.window.onDidChangeWindowState((state) => this.handleWindowState(state)),
+		);
 	}
 
 	// 再接続後は Discord 側の表示が消えているため、前回と同じ内容でも送り直す
 	handleReady(): void {
-		this.lastSentJson = undefined;
-		this.clearDebounceTimer();
-		this.sendThrottled();
+		this.resend();
 	}
 
 	dispose(): void {
 		this.clearDebounceTimer();
+		this.clearIdleTimer();
 		if (this.throttleTimer) {
 			clearTimeout(this.throttleTimer);
 			this.throttleTimer = undefined;
 		}
 		vscode.Disposable.from(...this.disposables).dispose();
+	}
+
+	private handleEditorChange(editor: vscode.TextEditor | undefined): void {
+		if (!this.updateEditor(editor)) {
+			return;
+		}
+		if (editor) {
+			this.idle = false;
+			if (!vscode.window.state.focused) {
+				this.startIdleTimer();
+			}
+		}
+		this.requestUpdate();
+	}
+
+	private handleWindowState(state: vscode.WindowState): void {
+		if (state.focused) {
+			this.clearIdleTimer();
+			this.idle = false;
+			// 他のウィンドウの表示で上書きされている可能性があるため、前回と同じ内容でも送り直す
+			this.resend();
+		} else {
+			this.startIdleTimer();
+		}
 	}
 
 	// 無視するエディタでは直前のファイルの表示を残し、更新が不要なことを false で返す
@@ -63,6 +90,21 @@ export class PresenceController implements vscode.Disposable {
 			language: { name: languageId },
 		};
 		return true;
+	}
+
+	private startIdleTimer(): void {
+		this.clearIdleTimer();
+		this.idleTimer = setTimeout(() => {
+			this.idleTimer = undefined;
+			this.idle = true;
+			this.sendThrottled();
+		}, getIdleTimeoutMs());
+	}
+
+	private resend(): void {
+		this.lastSentJson = undefined;
+		this.clearDebounceTimer();
+		this.sendThrottled();
 	}
 
 	private requestUpdate(): void {
@@ -92,7 +134,7 @@ export class PresenceController implements vscode.Disposable {
 	private send(): void {
 		const activity = buildActivity(
 			{
-				idle: false,
+				idle: this.idle,
 				editor: this.editor,
 				workspaceName: vscode.workspace.name,
 				startedAt: this.startedAt,
@@ -113,6 +155,13 @@ export class PresenceController implements vscode.Disposable {
 		if (this.debounceTimer) {
 			clearTimeout(this.debounceTimer);
 			this.debounceTimer = undefined;
+		}
+	}
+
+	private clearIdleTimer(): void {
+		if (this.idleTimer) {
+			clearTimeout(this.idleTimer);
+			this.idleTimer = undefined;
 		}
 	}
 }

@@ -37,7 +37,7 @@ The specs are the source of truth for what to build; read the relevant section b
 - `src/config.ts`: reads settings; holds `DEFAULT_CLIENT_ID`. `ICON_BASE_URL` is in `activityBuilder.ts`, which must not import `config.ts` (it imports `vscode`).
 - `src/languages.ts`: `languageId` → display name and icon name.
 - `src/ipc/`: Discord IPC client (`getIpcPath.ts`, `frame.ts`, `discordIpc.ts`).
-- `src/presence/`: `activityBuilder.ts` (pure) and `presenceController.ts` (VS Code events, idle, throttling).
+- `src/presence/`: `activityBuilder.ts` (pure), `presenceController.ts` (VS Code events, idle, throttling), and `windowLeader.ts` (only the last focused window connects).
 - `src/test/`: unit tests. `assets/icons/`: icon PNGs served to Discord from GitHub raw URLs.
 - `out/`, `.vscode-test/`, `*.vsix`: generated and git-ignored. Do not edit.
 - `docs/`: only the two specs are tracked; anything else there is git-ignored local notes. When behavior or the protocol handling changes, update the spec in the same change.

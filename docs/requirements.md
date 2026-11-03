@@ -46,6 +46,7 @@ A VS Code extension that shows what the user is working on as a Discord activity
 - **Tests**: Mocha in the extension host via `@vscode/test-cli` and `@vscode/test-electron`
 - **Lint**: ESLint with typescript-eslint
 - **Packaging**: `@vscode/vsce` (run with `npx`; not added to `devDependencies`)
+- **Icon generation**: `scripts/generateIcons.mjs` (`npm run generate:icons`) renders devicon SVGs to PNG with the installed Chrome or Edge in headless mode (6.2). No dependency is added.
 
 ## 4. Privacy and Data Sent
 
@@ -130,16 +131,9 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 ### 6.1 Language Names
 
 - The VS Code API gives only `document.languageId` (e.g. `typescriptreact`), so `src/languages.ts` maps it to a display name and an icon name.
-- A `languageId` that is not in the map is shown as is, with the VS Code logo.
-
-```ts
-export const LANGUAGES: Record<string, { name: string; icon?: string }> = {
-  typescript: { name: 'TypeScript', icon: 'typescript' },
-  typescriptreact: { name: 'TypeScript React', icon: 'react' },
-  javascript: { name: 'JavaScript', icon: 'javascript' },
-  python: { name: 'Python', icon: 'python' },
-};
-```
+- A `languageId` that is not in the map is shown as is, with the VS Code logo. Lookup uses `Object.hasOwn`, so IDs such as `constructor` are not matched against `Object.prototype`.
+- The map covers common built-in `languageId`s (about 37). Some have no icon: `bat`, `plaintext`, `sql` (devicon has no generic icon for them).
+- `icon` is the devicon icon name and the PNG file name (e.g. `cpp` uses `cplusplus`, `html` uses `html5`). Several languages share one icon (`react`, `json`, `docker`, `sass`).
 
 ### 6.2 Icons
 
@@ -147,8 +141,15 @@ export const LANGUAGES: Record<string, { name: string; icon?: string }> = {
   - Base URL: `https://raw.githubusercontent.com/necotan/vscode-discord-presence/main/assets/icons`, defined once as `ICON_BASE_URL` in `src/presence/activityBuilder.ts` (not in `config.ts`, which imports `vscode`).
   - The repository must be public, or Discord cannot fetch the images.
 - A language without `icon` uses `vscode.png`. The extension does not check whether a URL exists (that would need a network request).
-- Format: PNG, square, about 512×512.
-- Use only images whose license allows it (for example, devicon is MIT). List the sources and licenses in the README.
+- Source: devicon `v2.17.0` (MIT), the `-original` SVG, or `-plain` when there is none. The VS Code logo is devicon `vscode`. The logos themselves are trademarks of their owners; the README states this.
+  - `v2.18.0` was skipped because it was only 9 days old when the icons were made.
+- Format: PNG, 512×512, transparent background, the logo drawn at 448×448 in the center so that Discord's rounded corners do not cut it.
+  - Black logos (Rust, Markdown, etc.) are hard to see on Discord's dark theme. Accepted for now; add a background in the script if it is a problem.
+- Generation: `npm run generate:icons` reads the `icon` names in `src/languages.ts`, adds `vscode`, and writes `assets/icons/<icon>.png` and `assets/icons/LICENSE-devicon.txt` (MIT requires the notice with copies).
+  - Windows: the browser process returns before the PNG is written, so the script waits until the file exists and its size stops changing. Each icon uses its own temporary profile.
+- Discord cannot show SVG image URLs, so PNG is used.
+- The icons are fetched from the `main` branch, so new icons display only after they are merged into `main`.
+- List the sources and licenses in the README.
 - Whether Discord displays external image URLs in `large_image` / `small_image`, and how long it caches them after an image changes, is **[live test]**.
 
 ## 7. Settings (`contributes.configuration`)
@@ -232,6 +233,7 @@ vscode-discord-presence/
 - Unit tests (`npm test`):
   - `frame.ts`: encoding; decoding a frame split across chunks, several frames in one chunk, and multi-byte UTF-8 JSON.
   - `activityBuilder.ts`: every row and rule in 5.1 and 5.2, each `show*` setting, truncation at 128 characters.
+  - `languages.ts`: lookup and fallback, and that every `icon` (plus `vscode`) has a PNG in `assets/icons/`.
 - Manual tests: F5 (Extension Development Host) with the Discord desktop app running. Each milestone in 13 lists what to check.
 - There are no automated tests against a real Discord client.
 
@@ -240,7 +242,7 @@ vscode-discord-presence/
 - Build with `npx @vscode/vsce package`; install with "Extensions: Install from VSIX...".
 - Before the first package, `package.json` needs `publisher`, `repository`, and `license`, and the README must replace the `yo code` template (vsce rejects the template README).
 - The README covers installation, settings, commands, what is sent to Discord (4), and icon sources and licenses.
-- `.vscodeignore` keeps `src/`, tests, and maps out of the `.vsix`. `assets/icons/` is served from GitHub, so it can be excluded as well.
+- `.vscodeignore` keeps `src/`, maps, `assets/` (served from GitHub), and `scripts/` out of the `.vsix`. Compiled tests in `out/test/` are still included; exclude them in milestone 6.
 
 ## 13. Milestones
 

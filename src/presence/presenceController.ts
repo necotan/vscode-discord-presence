@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { CONFIG_SECTION, getIdleTimeoutMs, getPresenceSettings } from '../config';
 import type { Activity } from '../ipc/discordIpc';
+import { getLanguage } from '../languages';
 import { buildActivity, EditorInfo } from './activityBuilder';
 
 // Discord の SET_ACTIVITY は 20 秒に 5 回程度までのため、送信間隔を 4 秒以上空ける
@@ -103,7 +104,7 @@ export class PresenceController implements vscode.Disposable {
 			this.editor = {
 				// fsPath ではなく uri.path を使い、untitled やリモートのファイルでも同じ方法で名前を取る
 				fileName: path.posix.basename(uri.path),
-				language: { name: languageId },
+				language: getLanguage(languageId),
 			};
 		} else if (!this.editorUri || !isOpenInTab(this.editorUri)) {
 			// 設定画面や画像プレビューなどファイル以外のタブでは直前のファイルを表示し続け、そのタブが閉じられたらアイドル表示にする

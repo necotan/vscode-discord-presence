@@ -5,6 +5,9 @@ export const ICON_BASE_URL = 'https://raw.githubusercontent.com/necotan/vscode-d
 const VSCODE_ICON = 'vscode';
 const VSCODE_NAME = 'Visual Studio Code';
 const MAX_TEXT_LENGTH = 128;
+const MIN_TEXT_LENGTH = 2;
+// 見た目を変えずに最小文字数を満たすため、ゼロ幅スペースで埋める
+const PADDING = '\u200b';
 
 export interface LanguageInfo {
 	name: string;
@@ -39,18 +42,18 @@ export function buildActivity(state: PresenceState, settings: PresenceSettings):
 
 function buildEditingActivity(editor: EditorInfo, workspaceName: string | undefined, settings: PresenceSettings): Activity {
 	const activity: Activity = {
-		details: truncate(settings.showFileName ? `Editing ${editor.fileName}` : 'Editing a file'),
+		details: fitText(settings.showFileName ? `Editing ${editor.fileName}` : 'Editing a file'),
 		assets: settings.showLanguage
 			? {
 				large_image: iconUrl(editor.language.icon ?? VSCODE_ICON),
-				large_text: truncate(editor.language.name),
+				large_text: fitText(editor.language.name),
 				small_image: iconUrl(VSCODE_ICON),
 				small_text: VSCODE_NAME,
 			}
 			: vscodeAssets(),
 	};
 	if (settings.showWorkspace && workspaceName) {
-		activity.state = truncate(`In ${workspaceName}`);
+		activity.state = fitText(`In ${workspaceName}`);
 	}
 	return activity;
 }
@@ -63,8 +66,12 @@ function iconUrl(icon: string): string {
 	return `${ICON_BASE_URL}/${icon}.png`;
 }
 
-// サロゲートペアを途中で切らないよう、UTF-16 単位ではなくコードポイント単位で数える
-export function truncate(text: string): string {
+// Discord は 2 文字未満の文字列を拒否してアクティビティ全体を更新しない（言語名 C や R で確認）。
+// 最小文字数は UTF-16 単位で判定されるため length で比べ、最大文字数はサロゲートペアを途中で切らないようコードポイント単位で数える
+export function fitText(text: string): string {
+	if (text.length < MIN_TEXT_LENGTH) {
+		return text.padEnd(MIN_TEXT_LENGTH, PADDING);
+	}
 	const chars = Array.from(text);
 	return chars.length <= MAX_TEXT_LENGTH ? text : `${chars.slice(0, MAX_TEXT_LENGTH - 1).join('')}…`;
 }

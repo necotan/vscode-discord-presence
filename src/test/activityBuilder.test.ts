@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { buildActivity, ICON_BASE_URL, PresenceSettings, PresenceState, truncate } from '../presence/activityBuilder';
+import { buildActivity, ICON_BASE_URL, PresenceSettings, PresenceState, fitText } from '../presence/activityBuilder';
 
 const ALL_ON: PresenceSettings = {
 	showFileName: true,
@@ -83,13 +83,25 @@ suite('activityBuilder', () => {
 		assert.strictEqual(Array.from(activity.state ?? '').length, 128);
 	});
 
-	test('truncate keeps text up to 128 characters as is', () => {
-		const text = 'a'.repeat(128);
-		assert.strictEqual(truncate(text), text);
+	test('pads one-character language names so Discord accepts them', () => {
+		const state: PresenceState = { ...EDITING, editor: { fileName: 'a.c', language: { name: 'C', icon: 'c' } } };
+		assert.strictEqual(buildActivity(state, ALL_ON).assets?.large_text, 'C\u200b');
 	});
 
-	test('truncate counts surrogate pairs as one character and never splits them', () => {
-		const result = truncate('😀'.repeat(130));
+	test('fitText pads text shorter than 2 UTF-16 units and leaves 2 or more as is', () => {
+		assert.strictEqual(fitText(''), '\u200b\u200b');
+		assert.strictEqual(fitText('R'), 'R\u200b');
+		assert.strictEqual(fitText('Go'), 'Go');
+		assert.strictEqual(fitText('😀'), '😀');
+	});
+
+	test('fitText keeps text up to 128 characters as is', () => {
+		const text = 'a'.repeat(128);
+		assert.strictEqual(fitText(text), text);
+	});
+
+	test('fitText counts surrogate pairs as one character and never splits them', () => {
+		const result = fitText('😀'.repeat(130));
 		assert.strictEqual(Array.from(result).length, 128);
 		assert.strictEqual(result, `${'😀'.repeat(127)}…`);
 	});

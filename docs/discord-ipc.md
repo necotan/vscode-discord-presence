@@ -80,7 +80,7 @@ Built by `activityBuilder.ts` (`requirements.md` §5.1–5.2). Only these fields
 
 - Omit a field instead of sending an empty string or `null`.
 - String fields: at most 128 characters. Longer text is cut to 127 characters plus `…`. Count characters by code point so a surrogate pair is never split.
-- Minimum length: strings of 1 character are reported to be rejected **[live test]**. If confirmed, pad or replace short values in `activityBuilder.ts` and record the rule here.
+- Minimum length: 2 (confirmed). With the language name `C`, Discord answered `ERROR` code 4000, `"large_text" length must be at least 2 characters long`, and kept showing the previous activity. `fitText` in `activityBuilder.ts` pads text shorter than 2 UTF-16 units with zero-width spaces (`\u200b`), so `C` is sent as `C\u200b` and looks unchanged.
 
 ## 6. Rate Limiting
 

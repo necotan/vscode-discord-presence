@@ -82,7 +82,7 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 - `showFileName` is false: `details` is `Editing a file`.
 - `showLanguage` is false: `large_image` is the VS Code logo, `large_text` is `Visual Studio Code`, and `small_image` / `small_text` are omitted.
 - `showWorkspace` is false, or no folder or workspace is open: `state` is omitted.
-- String fields are limited to 128 characters; longer text is cut and ends with `…` (`discord-ipc.md` §5). Very short strings (1 character) are reported to be rejected **[live test]**.
+- String fields are limited to 128 characters; longer text is cut and ends with `…` (`discord-ipc.md` §5). Text shorter than 2 characters (e.g. the language names `C` and `R`) is padded with a zero-width space, because Discord rejects it (`discord-ipc.md` §5).
 - The file name of an untitled editor is its title (e.g. `Untitled-1`).
 
 ### 5.2 Idle Display
@@ -150,7 +150,8 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 - Discord cannot show SVG image URLs, so PNG is used.
 - The icons are fetched from the `main` branch, so new icons display only after they are merged into `main`.
 - List the sources and licenses in the README.
-- Whether Discord displays external image URLs in `large_image` / `small_image`, and how long it caches them after an image changes, is **[live test]**.
+- Discord displays the GitHub raw URLs in `large_image` and `small_image` (confirmed with TypeScript, Rust, and Markdown). Black logos are readable on the dark theme, with low contrast.
+- How long Discord caches an image after it changes at the same URL is **[live test]**.
 
 ## 7. Settings (`contributes.configuration`)
 
@@ -257,8 +258,7 @@ Each milestone ends with manual test steps for the user. The next one starts aft
 
 ## 14. Open Questions
 
-- **[live test]** Minimum string length Discord accepts (5.1).
-- **[live test]** Whether external image URLs display, and Discord's cache time after an image changes (6.2).
+- **[live test]** Discord's cache time after an image changes at the same URL (6.2).
 - Notebooks: not tested. A notebook cell editor is a text editor, so the notebook file name is expected to be shown (5.3).
 - Language of the Discord text and setting descriptions: English only for now. Whether to localize with `package.nls.*.json` and `vscode.l10n`.
 - `toggle` writes the user setting; if a workspace setting overrides `enabled`, the toggle has no visible effect.

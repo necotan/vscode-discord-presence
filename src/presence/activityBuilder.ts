@@ -27,17 +27,14 @@ export interface PresenceSettings {
 	showFileName: boolean;
 	showLanguage: boolean;
 	showWorkspace: boolean;
-	showElapsedTime: boolean;
 }
 
 export function buildActivity(state: PresenceState, settings: PresenceSettings): Activity {
 	const activity: Activity = state.idle || !state.editor
 		? { details: 'Idling', assets: vscodeAssets() }
 		: buildEditingActivity(state.editor, state.workspaceName, settings);
-	if (settings.showElapsedTime) {
-		activity.timestamps = { start: state.startedAt };
-	}
-	return activity;
+	// timestamps を省いても Discord が独自に経過時間を数えて表示するため、隠す設定は設けず常に送る
+	return { ...activity, timestamps: { start: state.startedAt } };
 }
 
 function buildEditingActivity(editor: EditorInfo, workspaceName: string | undefined, settings: PresenceSettings): Activity {

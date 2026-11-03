@@ -54,7 +54,20 @@ export class DiscordIpcClient {
 	private attempt = 0;
 	private pendingClear: { nonce: string; resolve: () => void } | undefined;
 
-	constructor(private readonly options: DiscordIpcOptions) {}
+	private clientId: string;
+
+	constructor(private readonly options: DiscordIpcOptions) {
+		this.clientId = options.clientId;
+	}
+
+	// ハンドシェイクでしか Client ID を渡せないため、変わったら接続し直す
+	setClientId(clientId: string): void {
+		if (clientId === this.clientId) {
+			return;
+		}
+		this.clientId = clientId;
+		this.reconnect();
+	}
 
 	start(): void {
 		if (this.running) {
@@ -134,7 +147,7 @@ export class DiscordIpcClient {
 		socket.on('close', () => this.handleDisconnect(socket, 'pipe closed'));
 		socket.on('data', (chunk: Buffer) => this.handleData(socket, chunk));
 		this.options.logger.info(`Connected to ${path}`);
-		this.write(Opcode.Handshake, { v: 1, client_id: this.options.clientId });
+		this.write(Opcode.Handshake, { v: 1, client_id: this.clientId });
 	}
 
 	private handleData(socket: net.Socket, chunk: Buffer): void {

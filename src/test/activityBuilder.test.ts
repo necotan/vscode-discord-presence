@@ -5,7 +5,6 @@ const ALL_ON: PresenceSettings = {
 	showFileName: true,
 	showLanguage: true,
 	showWorkspace: true,
-	showElapsedTime: true,
 };
 
 const EDITING: PresenceState = {
@@ -57,8 +56,9 @@ suite('activityBuilder', () => {
 		assert.ok(!('state' in buildActivity({ ...EDITING, workspaceName: undefined }, ALL_ON)));
 	});
 
-	test('omits timestamps when showElapsedTime is off', () => {
-		assert.ok(!('timestamps' in buildActivity(EDITING, { ...ALL_ON, showElapsedTime: false })));
+	test('always sends the start time, even with every setting off', () => {
+		const activity = buildActivity(EDITING, { showFileName: false, showLanguage: false, showWorkspace: false });
+		assert.deepStrictEqual(activity.timestamps, { start: 1_700_000_000_000 });
 	});
 
 	test('builds the idle display when idle or without an editor, keeping the start time', () => {
@@ -69,11 +69,6 @@ suite('activityBuilder', () => {
 		};
 		assert.deepStrictEqual(buildActivity({ ...EDITING, idle: true }, ALL_ON), expected);
 		assert.deepStrictEqual(buildActivity({ ...EDITING, editor: undefined }, ALL_ON), expected);
-	});
-
-	test('omits timestamps on the idle display when showElapsedTime is off', () => {
-		const activity = buildActivity({ ...EDITING, idle: true }, { ...ALL_ON, showElapsedTime: false });
-		assert.deepStrictEqual(activity, { details: 'Idling', assets: VSCODE_ASSETS });
 	});
 
 	test('truncates long file and workspace names to 128 characters', () => {

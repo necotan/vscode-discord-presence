@@ -56,7 +56,7 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 | File base name (e.g. `extension.ts`) | active text editor | `showFileName` |
 | Language display name | `document.languageId` via `src/languages.ts` | `showLanguage` |
 | Workspace name | `vscode.workspace.name` | `showWorkspace` |
-| Start time | time of `activate` | `showElapsedTime` |
+| Start time | time of `activate` | (always sent, see 5.4) |
 | Process ID | `process.pid` | (required by `SET_ACTIVITY`, not shown) |
 
 - NEVER sent: full paths, folder names other than the workspace name, file contents, Git branch or remote, user names.
@@ -76,12 +76,11 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 | `assets.large_text` | Language display name | `TypeScript` | `showLanguage` |
 | `assets.small_image` | VS Code logo URL | `<ICON_BASE_URL>/vscode.png` | always |
 | `assets.small_text` | `Visual Studio Code` | | always |
-| `timestamps.start` | Start time (epoch ms) | | `showElapsedTime` |
+| `timestamps.start` | Start time (epoch ms) | | always |
 
 - `showFileName` is false: `details` is `Editing a file`.
 - `showLanguage` is false: `large_image` is the VS Code logo, `large_text` is `Visual Studio Code`, and `small_image` / `small_text` are omitted.
 - `showWorkspace` is false, or no folder or workspace is open: `state` is omitted.
-- `showElapsedTime` is false: `timestamps` is omitted.
 - String fields are limited to 128 characters; longer text is cut and ends with `…` (`discord-ipc.md` §5). Very short strings (1 character) are reported to be rejected **[live test]**.
 - The file name of an untitled editor is its title (e.g. `Untitled-1`).
 
@@ -90,13 +89,14 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 - `details`: `Idling`
 - `large_image`: VS Code logo; `large_text`: `Visual Studio Code`
 - `state`, the language icon, and `small_image` are omitted.
-- `timestamps.start` keeps the same start time as the normal display (idle does not reset it), unless `showElapsedTime` is false.
+- `timestamps.start` keeps the same start time as the normal display (idle does not reset it).
 
 ### 5.3 Switching to Idle
 
 | Situation | Behavior |
 |---|---|
-| No active text editor (all files closed, or a non-text editor is active) | Idle display immediately |
+| The displayed file is no longer open in any tab, and no text editor is active | Idle display immediately |
+| A non-text tab (Settings, image preview, extension page, etc.) or the output panel is active | The last file stays displayed while its tab is still open |
 | The VS Code window loses focus | Idle display after `idleTimeoutMinutes` minutes |
 | The window regains focus, or a text editor becomes active | Normal display immediately; the idle timer is cancelled |
 
@@ -104,11 +104,12 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 - `idleTimeoutMinutes` is 0: idle display as soon as focus is lost.
 - The active editor is `vscode.window.activeTextEditor`, followed by `onDidChangeActiveTextEditor`.
 - Output panel: focusing it makes `activeTextEditor` an `output:` URI (confirmed in VS Code 1.144), which would show an internal channel name. Editors with the `output` scheme are ignored and the last file stays displayed (`IGNORED_SCHEMES` in `presenceController.ts`).
-- How to treat webviews, custom editors, notebooks, and diff editors is an open question (see 14).
+- Non-text tabs: `activeTextEditor` becomes `undefined` while Settings or another non-text tab is active. Treating that as idle showed `Idling` whenever the user opened Settings, so the last file stays displayed instead. Whether its tab is still open is checked through `vscode.window.tabGroups` (`TabInputText`, and the modified side of `TabInputTextDiff`), also on `onDidChangeTabs`.
 
 ### 5.4 Elapsed Time
 
-- The start time is when the extension activated in that window (`activate`).
+- The start time is when the extension activated in that window (`activate`). It is always sent; there is no setting to hide it.
+  - Reason (confirmed): when `timestamps` is omitted, Discord shows its own elapsed time from 0 instead of hiding it, so a hide setting cannot work.
 - Each window has its own start time, because each window runs its own extension host. This is accepted for now. Sharing it through `context.globalState` is a future candidate.
 - Toggling `enabled` off and on keeps the start time.
 
@@ -159,7 +160,6 @@ export const LANGUAGES: Record<string, { name: string; icon?: string }> = {
 | `discordPresence.showFileName` | boolean | `true` | Show the file name |
 | `discordPresence.showLanguage` | boolean | `true` | Show the language name and icon |
 | `discordPresence.showWorkspace` | boolean | `true` | Show the workspace name |
-| `discordPresence.showElapsedTime` | boolean | `true` | Show the elapsed time |
 | `discordPresence.idleTimeoutMinutes` | number | `5` | Minutes after losing focus before the idle display; `0` is immediate. Minimum `0`. |
 
 - `DEFAULT_CLIENT_ID` in `src/config.ts` is filled in by the author after registering the Discord application.
@@ -175,7 +175,8 @@ export const LANGUAGES: Record<string, { name: string; icon?: string }> = {
 | `discordPresence.reconnect` | Discord Presence: Reconnect | Disconnect, then connect at once (without waiting for the reconnect interval) |
 | `discordPresence.toggle` | Discord Presence: Toggle | Invert `discordPresence.enabled` in the user (global) settings |
 
-The template command `vscode-discord-presence.helloWorld` is removed in milestone 1.
+- `reconnect` only logs and does nothing when `enabled` is false or another window is the connected one (5.5).
+- Titles are shown as `Discord Presence: <title>` through `"category": "Discord Presence"`.
 
 ## 9. Connection and Error Handling
 
@@ -256,7 +257,7 @@ Each milestone ends with manual test steps for the user. The next one starts aft
 
 - **[live test]** Minimum string length Discord accepts (5.1).
 - **[live test]** Whether external image URLs display, and Discord's cache time after an image changes (6.2).
-- Webviews, custom editors (image preview, etc.), notebooks, and diff editors: idle display, or keep the last file? (The output panel is decided in 5.3.)
+- Notebooks: not tested. A notebook cell editor is a text editor, so the notebook file name is expected to be shown (5.3).
 - Language of the Discord text and setting descriptions: English only for now. Whether to localize with `package.nls.*.json` and `vscode.l10n`.
 - `toggle` writes the user setting; if a workspace setting overrides `enabled`, the toggle has no visible effect.
 

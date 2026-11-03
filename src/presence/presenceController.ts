@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { getIdleTimeoutMs, getPresenceSettings } from '../config';
+import { CONFIG_SECTION, getIdleTimeoutMs, getPresenceSettings } from '../config';
 import type { Activity } from '../ipc/discordIpc';
 import { buildActivity, EditorInfo } from './activityBuilder';
 
@@ -8,7 +8,7 @@ import { buildActivity, EditorInfo } from './activityBuilder';
 const DEBOUNCE_MS = 1_000;
 const THROTTLE_MS = 4_000;
 
-// 出力パネルにフォーカスすると activeTextEditor が output: の URI になり、内部名が表示されてしまうため無視する
+// 出力パネルにフォーカスすると activeTextEditor が output: の URI になり、内部名が表示されてしまうため対象外にする
 const IGNORED_SCHEMES = new Set(['output']);
 
 export class PresenceController implements vscode.Disposable {
@@ -19,19 +19,22 @@ export class PresenceController implements vscode.Disposable {
 	private lastSentJson: string | undefined;
 	private lastSentAt = 0;
 	private editor: EditorInfo | undefined;
+	private editorUri: vscode.Uri | undefined;
 	private idle = false;
 
 	constructor(
 		private readonly startedAt: number,
 		private readonly sendActivity: (activity: Activity) => boolean,
 	) {
-		this.updateEditor(vscode.window.activeTextEditor);
+		this.refreshEditor();
 		if (!vscode.window.state.focused) {
 			this.startIdleTimer();
 		}
 		this.disposables.push(
-			vscode.window.onDidChangeActiveTextEditor((editor) => this.handleEditorChange(editor)),
+			vscode.window.onDidChangeActiveTextEditor(() => this.handleEditorChange()),
+			vscode.window.tabGroups.onDidChangeTabs(() => this.handleTabsChange()),
 			vscode.window.onDidChangeWindowState((state) => this.handleWindowState(state)),
+			vscode.workspace.onDidChangeConfiguration((event) => this.handleConfigurationChange(event)),
 		);
 	}
 
@@ -50,11 +53,9 @@ export class PresenceController implements vscode.Disposable {
 		vscode.Disposable.from(...this.disposables).dispose();
 	}
 
-	private handleEditorChange(editor: vscode.TextEditor | undefined): void {
-		if (!this.updateEditor(editor)) {
-			return;
-		}
-		if (editor) {
+	private handleEditorChange(): void {
+		this.refreshEditor();
+		if (getTrackedEditor()) {
 			this.idle = false;
 			if (!vscode.window.state.focused) {
 				this.startIdleTimer();
@@ -63,33 +64,53 @@ export class PresenceController implements vscode.Disposable {
 		this.requestUpdate();
 	}
 
+	// 設定画面などを開いたまま、表示中のファイルのタブだけが閉じられた場合に気づくため
+	private handleTabsChange(): void {
+		if (this.refreshEditor()) {
+			this.requestUpdate();
+		}
+	}
+
 	private handleWindowState(state: vscode.WindowState): void {
 		if (state.focused) {
 			this.clearIdleTimer();
 			this.idle = false;
-			// 他のウィンドウの表示で上書きされている可能性があるため、前回と同じ内容でも送り直す
-			this.resend();
+			this.clearDebounceTimer();
+			this.sendThrottled();
 		} else {
 			this.startIdleTimer();
 		}
 	}
 
-	// 無視するエディタでは直前のファイルの表示を残し、更新が不要なことを false で返す
-	private updateEditor(editor: vscode.TextEditor | undefined): boolean {
-		if (!editor) {
+	private handleConfigurationChange(event: vscode.ConfigurationChangeEvent): void {
+		if (!event.affectsConfiguration(CONFIG_SECTION)) {
+			return;
+		}
+		// 待機中のタイマーだけを新しい時間でやり直す。アイドル表示中やフォーカス中は次にフォーカスが外れたときに反映される
+		if (this.idleTimer && event.affectsConfiguration(`${CONFIG_SECTION}.idleTimeoutMinutes`)) {
+			this.startIdleTimer();
+		}
+		this.requestUpdate();
+	}
+
+	// 表示するファイルが変わったかどうかを返す
+	private refreshEditor(): boolean {
+		const previous = this.editorUri?.toString();
+		const editor = getTrackedEditor();
+		if (editor) {
+			const { uri, languageId } = editor.document;
+			this.editorUri = uri;
+			this.editor = {
+				// fsPath ではなく uri.path を使い、untitled やリモートのファイルでも同じ方法で名前を取る
+				fileName: path.posix.basename(uri.path),
+				language: { name: languageId },
+			};
+		} else if (!this.editorUri || !isOpenInTab(this.editorUri)) {
+			// 設定画面や画像プレビューなどファイル以外のタブでは直前のファイルを表示し続け、そのタブが閉じられたらアイドル表示にする
+			this.editorUri = undefined;
 			this.editor = undefined;
-			return true;
 		}
-		const { uri, languageId } = editor.document;
-		if (IGNORED_SCHEMES.has(uri.scheme)) {
-			return false;
-		}
-		this.editor = {
-			// fsPath ではなく uri.path を使い、untitled やリモートのファイルでも同じ方法で名前を取る
-			fileName: path.posix.basename(uri.path),
-			language: { name: languageId },
-		};
-		return true;
+		return this.editorUri?.toString() !== previous;
 	}
 
 	private startIdleTimer(): void {
@@ -164,4 +185,22 @@ export class PresenceController implements vscode.Disposable {
 			this.idleTimer = undefined;
 		}
 	}
+}
+
+function getTrackedEditor(): vscode.TextEditor | undefined {
+	const editor = vscode.window.activeTextEditor;
+	return editor && !IGNORED_SCHEMES.has(editor.document.uri.scheme) ? editor : undefined;
+}
+
+function isOpenInTab(uri: vscode.Uri): boolean {
+	const target = uri.toString();
+	return vscode.window.tabGroups.all.some((group) => group.tabs.some((tab) => {
+		if (tab.input instanceof vscode.TabInputText) {
+			return tab.input.uri.toString() === target;
+		}
+		if (tab.input instanceof vscode.TabInputTextDiff) {
+			return tab.input.modified.toString() === target;
+		}
+		return false;
+	}));
 }

@@ -1,12 +1,16 @@
 import * as vscode from 'vscode';
 import type { PresenceSettings } from './presence/activityBuilder';
 
-// Discord Developer Portal で登録したアプリケーションの Application ID。公開情報なので埋め込んでよい
 export const DEFAULT_CLIENT_ID = '1566793053941923881';
 
 export function getClientId(): string {
 	const configured = vscode.workspace.getConfiguration('discordPresence').get<string>('clientId', '').trim();
 	return configured || DEFAULT_CLIENT_ID;
+}
+
+export function getIdleTimeoutMs(): number {
+	const minutes = vscode.workspace.getConfiguration('discordPresence').get<number>('idleTimeoutMinutes', 5);
+	return Math.max(0, minutes) * 60_000;
 }
 
 export function getPresenceSettings(): PresenceSettings {

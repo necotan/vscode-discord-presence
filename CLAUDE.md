@@ -22,7 +22,7 @@ The specs are the source of truth for what to build; read the relevant section b
 - `npm run watch`: incremental build (default build task)
 - `npm run lint`: ESLint
 - `npm test`: unit tests in the extension host via `@vscode/test-cli` (runs `compile` and `lint` first; downloads VS Code into `.vscode-test/` on the first run)
-- `npx @vscode/vsce package`: build the `.vsix`
+- `npx @vscode/vsce@4.0.0 package`: build the `.vsix` (version pinned; see `docs/requirements.md` §3)
 - `npm run generate:icons`: regenerate `assets/icons/*.png` from devicon (needs Chrome or Edge, and network access)
 - Manual testing: F5 in VS Code (Extension Development Host). The Discord desktop app must be running.
 

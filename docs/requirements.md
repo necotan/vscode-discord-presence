@@ -45,7 +45,7 @@ A VS Code extension that shows what the user is working on as a Discord activity
   - Reason: no supply-chain risk in what friends install, a small `.vsix`, and no bundler needed for `node_modules`.
 - **Tests**: Mocha in the extension host via `@vscode/test-cli` and `@vscode/test-electron`
 - **Lint**: ESLint with typescript-eslint
-- **Packaging**: `@vscode/vsce` (run with `npx`; not added to `devDependencies`)
+- **Packaging**: `@vscode/vsce` 4.0.0, run as `npx @vscode/vsce@4.0.0` (not added to `devDependencies`). 4.1.0 was skipped because it was only 6 days old.
 - **Icon generation**: `scripts/generateIcons.mjs` (`npm run generate:icons`) renders devicon SVGs to PNG with the installed Chrome or Edge in headless mode (6.2). No dependency is added.
 
 ## 4. Privacy and Data Sent
@@ -240,10 +240,12 @@ vscode-discord-presence/
 
 ## 12. Distribution
 
-- Build with `npx @vscode/vsce package`; install with "Extensions: Install from VSIX...".
-- Before the first package, `package.json` needs `publisher`, `repository`, and `license`, and the README must replace the `yo code` template (vsce rejects the template README).
-- The README covers installation, settings, commands, what is sent to Discord (4), and icon sources and licenses.
-- `.vscodeignore` keeps `src/`, maps, `assets/` (served from GitHub), and `scripts/` out of the `.vsix`. Compiled tests in `out/test/` are still included; exclude them in milestone 6.
+- Build with `npx @vscode/vsce@4.0.0 package`; install with "Extensions: Install from VSIX...".
+- `package.json`: `publisher` `necotan` (extension ID `necotan.vscode-discord-presence`), `license` `MIT`, `repository` on GitHub, `displayName` `Discord Presence`. The publisher is not registered on the Marketplace; no Marketplace extension or publisher used the name when it was chosen.
+  - Do not change `publisher` or `name`: a different ID installs as a separate extension, and both copies would connect to Discord.
+- Versioning: the first release is `0.1.0`. Record each release in `CHANGELOG.md`.
+- `README.md` (English) and `README.ja.md` (Japanese) have the same sections: features, requirements, installation, settings, commands, what is sent to Discord (4), development, credits (devicon and trademarks), license. Update both together.
+- `.vscodeignore` keeps `src/`, maps, `out/test/`, `assets/` (served from GitHub), `scripts/`, `docs/`, `CLAUDE.md`, and `README.ja.md` out of the `.vsix`. The `.vsix` holds `out/` (without tests), `package.json`, `README.md`, `CHANGELOG.md`, and `LICENSE` (about 20 KB). Check with `npx @vscode/vsce@4.0.0 ls` after adding files.
 
 ## 13. Milestones
 

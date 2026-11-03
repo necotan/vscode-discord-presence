@@ -10,3 +10,7 @@ src/**
 **/.vscode-test.*
 assets/**
 scripts/**
+out/test/**
+docs/**
+CLAUDE.md
+README.ja.md

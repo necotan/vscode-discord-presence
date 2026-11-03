@@ -1,71 +1,122 @@
-# vscode-discord-presence README
+<h1 align="center">Discord Presence</h1>
 
-This is the README for your extension "vscode-discord-presence". After writing up a brief description, we recommend including the following sections.
+<p align="center">
+  English | <a href="README.ja.md">日本語</a>
+</p>
+
+<p align="center">
+  A VS Code extension that shows the file you are editing, its language, and your workspace on Discord.<br>
+  No runtime dependencies: it talks to Discord through its local IPC with Node.js built-ins only.
+</p>
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Your Discord profile shows **Playing Visual Studio Code** with:
 
-For example if there is an image subfolder under your extension project workspace:
+- `Editing <file name>`
+- `In <workspace name>`
+- The language icon (hover to see the language name), with the VS Code logo in the corner
+- The elapsed time since the VS Code window opened
 
-\!\[feature X\]\(images/feature-x.png\)
+It switches to `Idling` when no file is open, or when VS Code has not been focused for 5 minutes (configurable).
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+With several VS Code windows open, the window you focused last is shown.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Windows
+- The Discord desktop app (Discord in a browser is not supported)
+- VS Code 1.144 or later
+- In Discord, **User Settings > Activity Privacy → share your detected activities** must be on.
 
-## Extension Settings
+Remote-SSH, WSL, and Dev Containers work: the extension runs on your local machine, where Discord is.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## Installation
 
-For example:
+This extension is not on the Marketplace. Install it from a `.vsix` file.
 
-This extension contributes the following settings:
+1. Get `vscode-discord-presence-<version>.vsix` (from the Releases page, or build it yourself; see [Development](#development)).
+2. In VS Code, open the Command Palette (`Ctrl+Shift+P`) and run **Extensions: Install from VSIX...**, then choose the file.
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+To update, install the new `.vsix` the same way. To uninstall, use the Extensions view.
 
-## Known Issues
+## Settings
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+| Setting | Default | Description |
+|---|---|---|
+| `discordPresence.enabled` | `true` | Show your VS Code activity on Discord |
+| `discordPresence.clientId` | `""` | Client ID of your own Discord application; empty uses the built-in one |
+| `discordPresence.showFileName` | `true` | Show the file name (`Editing a file` when off) |
+| `discordPresence.showLanguage` | `true` | Show the language name and icon (VS Code logo only when off) |
+| `discordPresence.showWorkspace` | `true` | Show the workspace name |
+| `discordPresence.idleTimeoutMinutes` | `5` | Minutes after VS Code loses focus before showing `Idling`; `0` is immediate |
 
-## Release Notes
+The elapsed time cannot be hidden: when it is not sent, Discord counts its own.
 
-Users appreciate release notes as you update your extension.
+## Commands
 
-### 1.0.0
+| Command | Description |
+|---|---|
+| **Discord Presence: Reconnect** | Reconnect to Discord now |
+| **Discord Presence: Toggle** | Turn `discordPresence.enabled` on or off (user settings) |
 
-Initial release of ...
+Logs are in the **Output** panel under **Discord Presence**.
 
-### 1.0.1
+## What Is Sent to Discord
 
-Fixed issue #.
+Only to the Discord app on your own machine, through its local named pipe:
 
-### 1.1.0
+- The base name of the active file (e.g. `extension.ts`)
+- The language name
+- The workspace name
+- The time the window opened
 
-Added features X, Y, and Z.
+Never sent: full paths, file contents, Git information, or anything else. Everything shown is visible to anyone who can see your Discord profile, so use the settings above to hide what should stay private.
 
----
+The extension makes no network requests. Discord loads the icons from this repository on GitHub.
 
-## Following extension guidelines
+## Development
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+### Prerequisites
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+- Node.js and npm
+- The Discord desktop app, running
 
-## Working with Markdown
+### Steps
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+```bash
+npm install
+npm run compile
+```
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+Press `F5` in VS Code to open an Extension Development Host with the extension loaded.
 
-## For more information
+### npm Scripts
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+| Command | Description |
+|---|---|
+| `npm run compile` | Build with `tsc` into `out/` |
+| `npm run watch` | Rebuild on change |
+| `npm run lint` | ESLint |
+| `npm test` | Unit tests in the extension host |
+| `npm run generate:icons` | Regenerate `assets/icons/*.png` from devicon (needs Chrome or Edge) |
 
-**Enjoy!**
+### Packaging
+
+```bash
+npx @vscode/vsce@4.0.0 package
+```
+
+### Specifications
+
+- [docs/requirements.md](docs/requirements.md): display rules, settings, commands, multi-window behavior
+- [docs/discord-ipc.md](docs/discord-ipc.md): the Discord IPC protocol as used here
+
+## Credits
+
+- Language icons and the VS Code logo: [devicon](https://github.com/devicons/devicon) v2.17.0, MIT License ([assets/icons/LICENSE-devicon.txt](assets/icons/LICENSE-devicon.txt)), converted to PNG.
+- The logos are trademarks of their respective owners. Visual Studio Code is a trademark of Microsoft. This extension is not affiliated with or endorsed by Microsoft or Discord.
+
+## License
+
+[MIT](LICENSE)

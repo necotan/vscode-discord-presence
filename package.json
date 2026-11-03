@@ -1,8 +1,14 @@
 {
   "name": "vscode-discord-presence",
-  "displayName": "vscode-discord-presence",
+  "displayName": "Discord Presence",
   "description": "Show your VS Code activity on Discord",
-  "version": "0.0.1",
+  "publisher": "necotan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/necotan/vscode-discord-presence.git"
+  },
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.144.0"
   },

@@ -1,0 +1,122 @@
+<h1 align="center">Discord Presence</h1>
+
+<p align="center">
+  <a href="README.md">English</a> | 日本語
+</p>
+
+<p align="center">
+  編集中のファイル、言語、ワークスペースを Discord に表示する VS Code 拡張機能です。<br>
+  ランタイムの依存パッケージはなく、Node.js の標準モジュールだけで Discord のローカル IPC と通信します。
+</p>
+
+## 機能
+
+Discord のプロフィールに **Visual Studio Code をプレイ中** と表示され、次の内容が出ます。
+
+- `Editing <ファイル名>`
+- `In <ワークスペース名>`
+- 言語のアイコン（マウスを乗せると言語名）と、右下に VS Code のロゴ
+- VS Code のウィンドウを開いてからの経過時間
+
+ファイルを開いていないとき、または VS Code からフォーカスが外れて5分たったとき（変更可）は `Idling` になります。
+
+VS Code のウィンドウを複数開いている場合は、最後にフォーカスしたウィンドウの内容が表示されます。
+
+## 動作環境
+
+- Windows
+- Discord デスクトップアプリ（ブラウザ版の Discord には対応していません）
+- VS Code 1.144 以降
+- Discord の **ユーザー設定 > アクティビティのプライバシー** で、検出されたアクティビティの共有をオンにしてください。
+
+Remote-SSH、WSL、Dev Containers でも使えます。拡張機能は、Discord が動いている手元の PC 側で動きます。
+
+## インストール
+
+Marketplace には公開していません。`.vsix` ファイルからインストールします。
+
+1. `vscode-discord-presence-<バージョン>.vsix` を入手します（Releases ページから、または自分でビルド。[開発](#開発)を参照）。
+2. VS Code でコマンドパレット（`Ctrl+Shift+P`）を開き、**Extensions: Install from VSIX...** を実行してファイルを選びます。
+
+更新するときは、新しい `.vsix` を同じ手順でインストールします。アンインストールは拡張機能ビューから行います。
+
+## 設定
+
+| 設定 | 既定値 | 説明 |
+|---|---|---|
+| `discordPresence.enabled` | `true` | VS Code の作業内容を Discord に表示する |
+| `discordPresence.clientId` | `""` | 自分で作った Discord アプリケーションの Client ID。空なら組み込みのものを使う |
+| `discordPresence.showFileName` | `true` | ファイル名を表示する（オフのときは `Editing a file`） |
+| `discordPresence.showLanguage` | `true` | 言語名とアイコンを表示する（オフのときは VS Code のロゴだけ） |
+| `discordPresence.showWorkspace` | `true` | ワークスペース名を表示する |
+| `discordPresence.idleTimeoutMinutes` | `5` | VS Code からフォーカスが外れてから `Idling` にするまでの分数。`0` ですぐ |
+
+経過時間は消せません。送らなかった場合でも、Discord が自分で数えて表示するためです。
+
+## コマンド
+
+| コマンド | 説明 |
+|---|---|
+| **Discord Presence: Reconnect** | すぐに Discord へ接続し直す |
+| **Discord Presence: Toggle** | `discordPresence.enabled` のオンとオフを切り替える（ユーザー設定） |
+
+ログは **出力** パネルの **Discord Presence** で見られます。
+
+## Discord に送る情報
+
+送り先は、自分の PC で動いている Discord アプリだけです（ローカルの名前付きパイプ経由）。
+
+- 開いているファイルの名前（例: `extension.ts`）
+- 言語名
+- ワークスペース名
+- ウィンドウを開いた時刻
+
+フルパス、ファイルの中身、Git の情報などは送りません。表示される内容は、あなたの Discord プロフィールを見られる人すべてに見えます。見せたくないものは、上の設定で隠してください。
+
+拡張機能自体はネットワーク通信をしません。アイコンは、Discord がこのリポジトリから GitHub 経由で読み込みます。
+
+## 開発
+
+### 前提条件
+
+- Node.js と npm
+- Discord デスクトップアプリ（起動しておく）
+
+### 手順
+
+```bash
+npm install
+npm run compile
+```
+
+VS Code で `F5` を押すと、拡張機能を読み込んだ拡張機能開発ホストが開きます。
+
+### npm スクリプト
+
+| コマンド | 説明 |
+|---|---|
+| `npm run compile` | `tsc` で `out/` にビルドする |
+| `npm run watch` | 変更のたびにビルドする |
+| `npm run lint` | ESLint |
+| `npm test` | 拡張機能ホストでユニットテストを実行する |
+| `npm run generate:icons` | devicon から `assets/icons/*.png` を作り直す（Chrome または Edge が必要） |
+
+### パッケージ化
+
+```bash
+npx @vscode/vsce@4.0.0 package
+```
+
+### 仕様書
+
+- [docs/requirements.md](docs/requirements.md): 表示のルール、設定、コマンド、複数ウィンドウの動き
+- [docs/discord-ipc.md](docs/discord-ipc.md): この拡張機能での Discord IPC の使い方
+
+## クレジット
+
+- 言語アイコンと VS Code のロゴ: [devicon](https://github.com/devicons/devicon) v2.17.0、MIT ライセンス（[assets/icons/LICENSE-devicon.txt](assets/icons/LICENSE-devicon.txt)）。PNG に変換して使用しています。
+- 各ロゴは、それぞれの持ち主の商標です。Visual Studio Code は Microsoft の商標です。この拡張機能は Microsoft および Discord とは関係がなく、承認も受けていません。
+
+## ライセンス
+
+[MIT](LICENSE)

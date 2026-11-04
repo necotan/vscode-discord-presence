@@ -75,7 +75,7 @@ Built by `activityBuilder.ts` (`requirements.md` §5.1–5.2). Only these fields
 | `timestamps.start` | number | Epoch ms. `timestamps` omitted when hidden. |
 | `assets.large_image` | string | HTTPS URL |
 | `assets.large_text` | string | |
-| `assets.small_image` | string | HTTPS URL. Omitted with `small_text` when `showLanguage` is false or idle. |
+| `assets.small_image` | string | HTTPS URL. Omitted with `small_text` when `showLanguage` or `showVSCodeLogo` is false, or idle. |
 | `assets.small_text` | string | |
 
 - Omit a field instead of sending an empty string or `null`.

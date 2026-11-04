@@ -4,6 +4,7 @@ import { buildActivity, ICON_BASE_URL, PresenceSettings, PresenceState, fitText 
 const ALL_ON: PresenceSettings = {
 	showFileName: true,
 	showLanguage: true,
+	showVSCodeLogo: true,
 	showWorkspace: true,
 };
 
@@ -44,6 +45,25 @@ suite('activityBuilder', () => {
 		assert.deepStrictEqual(activity.assets, VSCODE_ASSETS);
 	});
 
+	test('omits the small VS Code logo when showVSCodeLogo is off', () => {
+		const activity = buildActivity(EDITING, { ...ALL_ON, showVSCodeLogo: false });
+		assert.deepStrictEqual(activity.assets, {
+			large_image: `${ICON_BASE_URL}/typescript.png`,
+			large_text: 'TypeScript',
+		});
+	});
+
+	test('keeps the large VS Code logo when there is no language icon, even with showVSCodeLogo off', () => {
+		const noLogo: PresenceSettings = { ...ALL_ON, showVSCodeLogo: false };
+		const noIcon: PresenceState = { ...EDITING, editor: { fileName: 'a.foo', language: { name: 'foo' } } };
+		assert.deepStrictEqual(buildActivity(EDITING, { ...noLogo, showLanguage: false }).assets, VSCODE_ASSETS);
+		assert.deepStrictEqual(buildActivity(noIcon, noLogo).assets, {
+			large_image: `${ICON_BASE_URL}/vscode.png`,
+			large_text: 'foo',
+		});
+		assert.deepStrictEqual(buildActivity({ ...EDITING, idle: true }, noLogo).assets, VSCODE_ASSETS);
+	});
+
 	test('falls back to the VS Code logo for a language without an icon', () => {
 		const state: PresenceState = { ...EDITING, editor: { fileName: 'a.foo', language: { name: 'foo' } } };
 		const activity = buildActivity(state, ALL_ON);
@@ -57,7 +77,7 @@ suite('activityBuilder', () => {
 	});
 
 	test('always sends the start time, even with every setting off', () => {
-		const activity = buildActivity(EDITING, { showFileName: false, showLanguage: false, showWorkspace: false });
+		const activity = buildActivity(EDITING, { showFileName: false, showLanguage: false, showVSCodeLogo: false, showWorkspace: false });
 		assert.deepStrictEqual(activity.timestamps, { start: 1_700_000_000_000 });
 	});
 

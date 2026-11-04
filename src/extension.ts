@@ -77,7 +77,13 @@ export function activate(context: vscode.ExtensionContext): void {
 		}),
 		vscode.commands.registerCommand('discordPresence.toggle', async () => {
 			try {
-				await toggleEnabled();
+				const target = await toggleEnabled();
+				// .vscode/settings.json を書き換えたことに気づかないまま git の差分になるのを防ぐ
+				if (target === vscode.ConfigurationTarget.Workspace) {
+					void vscode.window.showInformationMessage(
+						`Discord Presence was turned ${isEnabled() ? 'on' : 'off'} in the workspace settings, which override your user settings.`,
+					);
+				}
 			} catch (error) {
 				logger.error(`Failed to toggle: ${String(error)}`);
 			}

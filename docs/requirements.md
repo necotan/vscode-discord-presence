@@ -197,11 +197,12 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 | Command ID | Title | Behavior |
 |---|---|---|
 | `discordPresence.reconnect` | Discord Presence: Reconnect | Disconnect, then connect at once (without waiting for the reconnect interval) |
-| `discordPresence.toggle` | Discord Presence: Toggle | Invert `discordPresence.enabled` in the user (global) settings |
+| `discordPresence.toggle` | Discord Presence: Toggle | Invert `discordPresence.enabled`: in the workspace settings when they set it, otherwise in the user (global) settings |
 | `discordPresence.showLog` | Discord Presence: Show Log | Open the `Discord Presence` output channel |
 | `discordPresence.showMenu` | (not in the Command Palette) | Open the status bar menu (9.1) |
 
 - `reconnect` only logs and does nothing when `enabled` is false, the workspace is hidden with `hide` (5.6), or another window is the connected one (5.5).
+- `toggle` writes where the effective value comes from (`inspect`), so it always has a visible effect. Writing only the user setting did nothing when the workspace settings override it. After writing the workspace settings, it shows an information message, because `.vscode/settings.json` may be tracked by git.
 - Titles are shown as `Discord Presence: <title>` through `"category": "Discord Presence"`.
 
 ## 9. Connection and Error Handling
@@ -314,7 +315,6 @@ Each milestone ends with manual test steps for the user. The next one starts aft
 - **[live test]** Discord's cache time after an image changes at the same URL (6.2).
 - Notebooks: not tested. A notebook cell editor is a text editor, so the notebook file name is expected to be shown (5.3).
 - Language of the Discord text and setting descriptions: English only for now. Whether to localize with `package.nls.*.json` and `vscode.l10n`.
-- `toggle` writes the user setting; if a workspace setting overrides `enabled`, the toggle has no visible effect.
 
 ### Future Candidates
 

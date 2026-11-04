@@ -87,7 +87,7 @@ No other setup in the Developer Portal is needed; the icons are loaded from GitH
 | Command | Description |
 |---|---|
 | **Discord Presence: Reconnect** | Reconnect to Discord now |
-| **Discord Presence: Toggle** | Turn `discordPresence.enabled` on or off (user settings) |
+| **Discord Presence: Toggle** | Turn `discordPresence.enabled` on or off (in the workspace settings if it is set there, otherwise in the user settings) |
 | **Discord Presence: Show Log** | Open the log |
 
 Logs are in the **Output** panel under **Discord Presence**.

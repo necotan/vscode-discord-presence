@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.0] - 2026-11-04
 
 - Added a status bar item that shows whether this window is shown on Discord, with a menu to turn it off or on, reconnect, show the log, or open the settings.
 - Added the **Discord Presence: Show Log** command.

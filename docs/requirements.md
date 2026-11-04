@@ -75,12 +75,13 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 | `state` | `In <workspace name>` | `In vscode-discord-presence` | `showWorkspace` |
 | `assets.large_image` | Language icon URL | `<ICON_BASE_URL>/typescript.png` | `showLanguage` |
 | `assets.large_text` | Language display name | `TypeScript` | `showLanguage` |
-| `assets.small_image` | VS Code logo URL | `<ICON_BASE_URL>/vscode.png` | always |
-| `assets.small_text` | `Visual Studio Code` | | always |
+| `assets.small_image` | VS Code logo URL | `<ICON_BASE_URL>/vscode.png` | `showVSCodeLogo` |
+| `assets.small_text` | `Visual Studio Code` | | `showVSCodeLogo` |
 | `timestamps.start` | Start time (epoch ms) | | always |
 
 - `showFileName` is false: `details` is `Editing a file`.
 - `showLanguage` is false: `large_image` is the VS Code logo, `large_text` is `Visual Studio Code`, and `small_image` / `small_text` are omitted.
+- `showVSCodeLogo` is false: `small_image` / `small_text` are omitted, so only the language icon is shown. The large image stays the VS Code logo when there is no language icon (`showLanguage` false, a language without an icon, or idle), because Discord shows a placeholder when `large_image` is missing.
 - `showWorkspace` is false, or no folder or workspace is open: `state` is omitted.
 - String fields are limited to 128 characters; longer text is cut and ends with `…` (`discord-ipc.md` §5). Text shorter than 2 characters (e.g. the language names `C` and `R`) is padded with a zero-width space, because Discord rejects it (`discord-ipc.md` §5).
 - The file name of an untitled editor is its title (e.g. `Untitled-1`).
@@ -161,6 +162,7 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 | `discordPresence.clientId` | string | `""` | Discord application Client ID; empty uses `DEFAULT_CLIENT_ID` |
 | `discordPresence.showFileName` | boolean | `true` | Show the file name |
 | `discordPresence.showLanguage` | boolean | `true` | Show the language name and icon |
+| `discordPresence.showVSCodeLogo` | boolean | `true` | Show the small VS Code logo in the corner of the language icon |
 | `discordPresence.showWorkspace` | boolean | `true` | Show the workspace name |
 | `discordPresence.idleTimeoutMinutes` | number | `5` | Minutes after losing focus before the idle display; `0` is immediate. Minimum `0`. |
 

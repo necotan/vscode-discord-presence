@@ -48,6 +48,7 @@ Marketplace には公開していません。`.vsix` ファイルからインス
 | `discordPresence.clientId` | `""` | 自分で作った Discord アプリケーションの Client ID。空なら組み込みのものを使う |
 | `discordPresence.showFileName` | `true` | ファイル名を表示する（オフのときは `Editing a file`） |
 | `discordPresence.showLanguage` | `true` | 言語名とアイコンを表示する（オフのときは VS Code のロゴだけ） |
+| `discordPresence.showVSCodeLogo` | `true` | 言語アイコンの右下に、小さな VS Code のロゴを表示する |
 | `discordPresence.showWorkspace` | `true` | ワークスペース名を表示する |
 | `discordPresence.idleTimeoutMinutes` | `5` | VS Code からフォーカスが外れてから `Idling` にするまでの分数。`0` ですぐ |
 

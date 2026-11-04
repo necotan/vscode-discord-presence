@@ -29,6 +29,7 @@ export interface PresenceState {
 export interface PresenceSettings {
 	showFileName: boolean;
 	showLanguage: boolean;
+	showVSCodeLogo: boolean;
 	showWorkspace: boolean;
 }
 
@@ -47,8 +48,7 @@ function buildEditingActivity(editor: EditorInfo, workspaceName: string | undefi
 			? {
 				large_image: iconUrl(editor.language.icon ?? VSCODE_ICON),
 				large_text: fitText(editor.language.name),
-				small_image: iconUrl(VSCODE_ICON),
-				small_text: VSCODE_NAME,
+				...(settings.showVSCodeLogo ? { small_image: iconUrl(VSCODE_ICON), small_text: VSCODE_NAME } : {}),
 			}
 			: vscodeAssets(),
 	};

@@ -33,6 +33,7 @@ export function getPresenceSettings(): PresenceSettings {
 	return {
 		showFileName: config.get<boolean>('showFileName', true),
 		showLanguage: config.get<boolean>('showLanguage', true),
+		showVSCodeLogo: config.get<boolean>('showVSCodeLogo', true),
 		showWorkspace: config.get<boolean>('showWorkspace', true),
 	};
 }

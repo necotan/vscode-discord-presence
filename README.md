@@ -48,6 +48,7 @@ To update, install the new `.vsix` the same way. To uninstall, use the Extension
 | `discordPresence.clientId` | `""` | Client ID of your own Discord application; empty uses the built-in one |
 | `discordPresence.showFileName` | `true` | Show the file name (`Editing a file` when off) |
 | `discordPresence.showLanguage` | `true` | Show the language name and icon (VS Code logo only when off) |
+| `discordPresence.showVSCodeLogo` | `true` | Show the small VS Code logo in the corner of the language icon |
 | `discordPresence.showWorkspace` | `true` | Show the workspace name |
 | `discordPresence.idleTimeoutMinutes` | `5` | Minutes after VS Code loses focus before showing `Idling`; `0` is immediate |
 

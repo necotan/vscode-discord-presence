@@ -45,7 +45,7 @@ To update, install the new `.vsix` the same way. To uninstall, use the Extension
 | Setting | Default | Description |
 |---|---|---|
 | `discordPresence.enabled` | `true` | Show your VS Code activity on Discord |
-| `discordPresence.clientId` | `""` | Client ID of your own Discord application; empty uses the built-in one |
+| `discordPresence.clientId` | `""` | Application ID of your own Discord application, to change the name after "Playing"; empty uses the built-in one ("Visual Studio Code") |
 | `discordPresence.showFileName` | `true` | Show the file name (`Editing a file` when off) |
 | `discordPresence.showLanguage` | `true` | Show the language name and icon (VS Code logo only when off) |
 | `discordPresence.showVSCodeLogo` | `true` | Show the small VS Code logo in the corner of the language icon |
@@ -53,6 +53,16 @@ To update, install the new `.vsix` the same way. To uninstall, use the Extension
 | `discordPresence.idleTimeoutMinutes` | `5` | Minutes after VS Code loses focus before showing `Idling`; `0` is immediate |
 
 The elapsed time cannot be hidden: when it is not sent, Discord counts its own.
+
+### Changing the Name After "Playing"
+
+The name is the name of the Discord application the extension connects as. To show a different one:
+
+1. In the [Discord Developer Portal](https://discord.com/developers/applications), click **New Application** and name it what you want to show (e.g. `VS Code`).
+2. Copy the **Application ID** from **General Information**.
+3. Paste it into `discordPresence.clientId`. The extension reconnects and shows the new name within a few seconds.
+
+No other setup in the Developer Portal is needed; the icons are loaded from GitHub. Clear the setting to go back to "Visual Studio Code".
 
 ## Commands
 

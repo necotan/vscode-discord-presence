@@ -45,7 +45,7 @@ Marketplace には公開していません。`.vsix` ファイルからインス
 | 設定 | 既定値 | 説明 |
 |---|---|---|
 | `discordPresence.enabled` | `true` | VS Code の作業内容を Discord に表示する |
-| `discordPresence.clientId` | `""` | 自分で作った Discord アプリケーションの Client ID。空なら組み込みのものを使う |
+| `discordPresence.clientId` | `""` | 自分で作った Discord アプリケーションの Application ID。「プレイ中」の名前を変えるときに使う。空なら組み込みのもの（「Visual Studio Code」）を使う |
 | `discordPresence.showFileName` | `true` | ファイル名を表示する（オフのときは `Editing a file`） |
 | `discordPresence.showLanguage` | `true` | 言語名とアイコンを表示する（オフのときは VS Code のロゴだけ） |
 | `discordPresence.showVSCodeLogo` | `true` | 言語アイコンの右下に、小さな VS Code のロゴを表示する |
@@ -53,6 +53,16 @@ Marketplace には公開していません。`.vsix` ファイルからインス
 | `discordPresence.idleTimeoutMinutes` | `5` | VS Code からフォーカスが外れてから `Idling` にするまでの分数。`0` ですぐ |
 
 経過時間は消せません。送らなかった場合でも、Discord が自分で数えて表示するためです。
+
+### 「プレイ中」の名前を変える
+
+表示される名前は、拡張機能が接続に使う Discord アプリケーションの名前です。別の名前にしたい場合は、次の手順で設定します。
+
+1. [Discord Developer Portal](https://discord.com/developers/applications) で **New Application** を押し、表示したい名前（例: `VS Code`）でアプリケーションを作ります。
+2. **General Information** の **Application ID** をコピーします。
+3. `discordPresence.clientId` に貼り付けます。拡張機能が接続し直し、数秒で新しい名前に変わります。
+
+Developer Portal でのほかの設定は不要です（アイコンは GitHub から読み込みます）。設定を空に戻すと「Visual Studio Code」に戻ります。
 
 ## コマンド
 

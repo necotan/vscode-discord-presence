@@ -159,7 +159,7 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 | Key | Type | Default | Description |
 |---|---|---|---|
 | `discordPresence.enabled` | boolean | `true` | Turns the whole extension on or off |
-| `discordPresence.clientId` | string | `""` | Discord application Client ID; empty uses `DEFAULT_CLIENT_ID` |
+| `discordPresence.clientId` | string | `""` | Application ID of the user's own Discord application, used to change the activity title (the application name); empty uses `DEFAULT_CLIENT_ID` ("Visual Studio Code") |
 | `discordPresence.showFileName` | boolean | `true` | Show the file name |
 | `discordPresence.showLanguage` | boolean | `true` | Show the language name and icon |
 | `discordPresence.showVSCodeLogo` | boolean | `true` | Show the small VS Code logo in the corner of the language icon |

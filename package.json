@@ -36,7 +36,7 @@
           "type": "string",
           "default": "",
           "order": 1,
-          "description": "Client ID (Application ID) of the Discord application. Leave empty to use the built-in one."
+          "description": "Application ID of your own Discord application. Its name is shown after \"Playing\". Leave empty to use the built-in one (\"Visual Studio Code\")."
         },
         "discordPresence.showFileName": {
           "type": "boolean",

@@ -87,7 +87,7 @@ Developer Portal でのほかの設定は不要です（アイコンは GitHub �
 | コマンド | 説明 |
 |---|---|
 | **Discord Presence: Reconnect** | すぐに Discord へ接続し直す |
-| **Discord Presence: Toggle** | `discordPresence.enabled` のオンとオフを切り替える（ユーザー設定） |
+| **Discord Presence: Toggle** | `discordPresence.enabled` のオンとオフを切り替える（ワークスペースの設定に書かれていればそちら、なければユーザー設定） |
 | **Discord Presence: Show Log** | ログを開く |
 
 ログは **出力** パネルの **Discord Presence** で見られます。

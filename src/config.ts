@@ -14,9 +14,15 @@ export function isEnabled(): boolean {
 	return getConfig().get<boolean>('enabled', true);
 }
 
-// ワークスペース設定で上書きされている場合は効かない（requirements.md §14）
-export async function toggleEnabled(): Promise<void> {
-	await getConfig().update('enabled', !isEnabled(), vscode.ConfigurationTarget.Global);
+// ユーザー設定だけを書き換えると、ワークスペース設定で上書きされているときに切り替わらないため、
+// 値が書かれているいちばん強い場所を書き換える。書き換えた場所を返す
+export async function toggleEnabled(): Promise<vscode.ConfigurationTarget> {
+	const config = getConfig();
+	const target = config.inspect<boolean>('enabled')?.workspaceValue !== undefined
+		? vscode.ConfigurationTarget.Workspace
+		: vscode.ConfigurationTarget.Global;
+	await config.update('enabled', !isEnabled(), target);
+	return target;
 }
 
 export function getClientId(): string {

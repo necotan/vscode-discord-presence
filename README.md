@@ -22,6 +22,8 @@ It switches to `Idling` when no file is open, or when VS Code has not been focus
 
 With several VS Code windows open, the window you focused last is shown.
 
+**Discord** in the status bar shows the state of each window: shown on Discord, Discord not found, another window shown, hidden, or off. Hover for details, or click for a menu (turn off or on, reconnect, show the log, open the settings). To remove it, right-click the status bar and uncheck **Discord Presence**.
+
 ## Requirements
 
 - Windows
@@ -86,6 +88,7 @@ No other setup in the Developer Portal is needed; the icons are loaded from GitH
 |---|---|
 | **Discord Presence: Reconnect** | Reconnect to Discord now |
 | **Discord Presence: Toggle** | Turn `discordPresence.enabled` on or off (user settings) |
+| **Discord Presence: Show Log** | Open the log |
 
 Logs are in the **Output** panel under **Discord Presence**.
 

@@ -31,7 +31,7 @@ export function getIdleTimeoutMs(): number {
 
 export function getPresenceSettings(): PresenceSettings {
 	const config = getConfig();
-	const masked = isCurrentWorkspaceHidden() && getHiddenWorkspaceMode() === 'mask';
+	const masked = getHiddenMatch() === 'mask';
 	return {
 		showFileName: !masked && config.get<boolean>('showFileName', true),
 		showLanguage: !masked && config.get<boolean>('showLanguage', true),
@@ -64,9 +64,13 @@ export function isCurrentWorkspaceHidden(): boolean {
 	return isHiddenWorkspace({ name, paths }, entries);
 }
 
+export function getHiddenMatch(): HiddenWorkspaceMode | undefined {
+	return isCurrentWorkspaceHidden() ? getHiddenWorkspaceMode() : undefined;
+}
+
 // hide のときは接続しないことで、ほかのウィンドウの表示も残さない（requirements.md §5.6）
 export function isHiddenByHideMode(): boolean {
-	return isCurrentWorkspaceHidden() && getHiddenWorkspaceMode() === 'hide';
+	return getHiddenMatch() === 'hide';
 }
 
 export function shouldConnect(): boolean {

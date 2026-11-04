@@ -22,6 +22,8 @@ Discord のプロフィールに **Visual Studio Code をプレイ中** と表�
 
 VS Code のウィンドウを複数開いている場合は、最後にフォーカスしたウィンドウの内容が表示されます。
 
+ステータスバーの **Discord** で、ウィンドウごとの状態（Discord に表示中、Discord が見つからない、別のウィンドウを表示中、隠している、オフ）がわかります。マウスを乗せると説明が出て、クリックするとメニュー（オフ/オン、再接続、ログを開く、設定を開く）が出ます。要らない場合は、ステータスバーを右クリックして **Discord Presence** のチェックを外してください。
+
 ## 動作環境
 
 - Windows
@@ -86,6 +88,7 @@ Developer Portal でのほかの設定は不要です（アイコンは GitHub �
 |---|---|
 | **Discord Presence: Reconnect** | すぐに Discord へ接続し直す |
 | **Discord Presence: Toggle** | `discordPresence.enabled` のオンとオフを切り替える（ユーザー設定） |
+| **Discord Presence: Show Log** | ログを開く |
 
 ログは **出力** パネルの **Discord Presence** で見られます。
 

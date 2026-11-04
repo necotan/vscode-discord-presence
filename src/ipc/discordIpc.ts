@@ -27,10 +27,13 @@ export interface Logger {
 	error(message: string): void;
 }
 
+export type IpcState = 'stopped' | 'connecting' | 'waiting' | 'connected';
+
 export interface DiscordIpcOptions {
 	clientId: string;
 	logger: Logger;
 	onReady: () => void;
+	onStateChange: (state: IpcState) => void;
 }
 
 interface IpcMessage {
@@ -53,6 +56,7 @@ export class DiscordIpcClient {
 	private retryTimer: NodeJS.Timeout | undefined;
 	private attempt = 0;
 	private pendingClear: { nonce: string; resolve: () => void } | undefined;
+	private state: IpcState = 'stopped';
 
 	private clientId: string;
 
@@ -82,6 +86,7 @@ export class DiscordIpcClient {
 	async stop(): Promise<void> {
 		this.running = false;
 		this.clearRetryTimer();
+		this.setState('stopped');
 		await this.clearActivityAndWait();
 		// 応答を待つ間に start された場合は、新しい接続を閉じない
 		if (!this.running) {
@@ -104,6 +109,10 @@ export class DiscordIpcClient {
 
 	private async connect(): Promise<void> {
 		const attempt = ++this.attempt;
+		// 再試行のたびに connecting へ戻すと、見つからないたびにステータスバーのアイコンが一瞬回ってしまう
+		if (this.state !== 'waiting') {
+			this.setState('connecting');
+		}
 		const paths = getIpcPaths();
 		if (paths.length === 0) {
 			this.options.logger.error(`Unsupported platform: ${process.platform}`);
@@ -189,6 +198,7 @@ export class DiscordIpcClient {
 	private handleMessage(message: IpcMessage): void {
 		if (message.cmd === 'DISPATCH' && message.evt === 'READY') {
 			this.ready = true;
+			this.setState('connected');
 			this.options.logger.info('Discord is ready');
 			this.options.onReady();
 			return;
@@ -253,6 +263,7 @@ export class DiscordIpcClient {
 	}
 
 	private scheduleRetry(): void {
+		this.setState('waiting');
 		if (this.retryTimer) {
 			return;
 		}
@@ -260,6 +271,14 @@ export class DiscordIpcClient {
 			this.retryTimer = undefined;
 			void this.connect();
 		}, RETRY_INTERVAL_MS);
+	}
+
+	private setState(state: IpcState): void {
+		if (state === this.state) {
+			return;
+		}
+		this.state = state;
+		this.options.onStateChange(state);
 	}
 
 	private clearRetryTimer(): void {

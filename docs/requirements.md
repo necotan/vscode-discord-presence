@@ -198,6 +198,8 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 |---|---|---|
 | `discordPresence.reconnect` | Discord Presence: Reconnect | Disconnect, then connect at once (without waiting for the reconnect interval) |
 | `discordPresence.toggle` | Discord Presence: Toggle | Invert `discordPresence.enabled` in the user (global) settings |
+| `discordPresence.showLog` | Discord Presence: Show Log | Open the `Discord Presence` output channel |
+| `discordPresence.showMenu` | (not in the Command Palette) | Open the status bar menu (9.1) |
 
 - `reconnect` only logs and does nothing when `enabled` is false, the workspace is hidden with `hide` (5.6), or another window is the connected one (5.5).
 - Titles are shown as `Discord Presence: <title>` through `"category": "Discord Presence"`.
@@ -216,7 +218,29 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 
 - No error may escape from an event handler or a timer. Catch and log every connection and protocol error.
 - Logs go to a `LogOutputChannel` named `Discord Presence` (`vscode.window.createOutputChannel(name, { log: true })`).
-- The extension does not show notifications for connection state. A status bar indicator is a future candidate.
+- The extension does not show notifications for connection state. The status bar shows it instead (9.1).
+
+### 9.1 Status Bar
+
+Each window shows one item on the right of the status bar (`src/statusBar.ts`): an icon for the state and the text `Discord`. The tooltip explains the state. The state is decided by `resolveStatus` in `src/presence/connectionStatus.ts`; a higher row wins.
+
+| State | Condition | Icon | Tooltip |
+|---|---|---|---|
+| `disabled` | `enabled` is false | `circle-slash` | `Discord Presence is off.` |
+| `hidden` | Hidden with `hiddenWorkspaceMode` `hide` (5.6) | `eye-closed` | `Hidden in this workspace (discordPresence.hiddenWorkspaces).` |
+| `otherWindow` | Not the leader window (5.5) | `window` | `Another VS Code window is shown on Discord.` |
+| `connecting` | Leader, waiting for `READY` | `sync~spin` | `Connecting to Discord...` |
+| `waiting` | Leader, Discord not found, or disconnected (including `CLOSE`) | `debug-disconnect` | `Not connected to Discord. Retrying every 15 s.` |
+| `connected` | Leader, `READY` received | `broadcast` | `Shown on Discord.`, or `Shown on Discord, masked in this workspace.` with `mask` (5.6) |
+
+- The connection state comes from `onStateChange` of `DiscordIpcClient` (`discord-ipc.md` §7). The retries every 15 s stay `waiting`, so the icon does not spin each time Discord is not found.
+- The color does not change: Discord not running is a normal state (9).
+- The item has an ID and the name `Discord Presence`, so it can be hidden from the status bar context menu. There is no setting for it.
+- Clicking it runs `discordPresence.showMenu`, a QuickPick with:
+  1. `Turn Off` or `Turn On`: runs `discordPresence.toggle`.
+  2. `Reconnect`: runs `discordPresence.reconnect`.
+  3. `Show Log`: runs `discordPresence.showLog`.
+  4. `Open Settings`: opens the Settings editor filtered by `@ext:<extension ID>`.
 
 ## 10. Module Structure
 
@@ -230,6 +254,7 @@ vscode-discord-presence/
 └── src/
     ├── extension.ts               # activate / deactivate, wiring only
     ├── config.ts                  # settings, DEFAULT_CLIENT_ID
+    ├── statusBar.ts               # status bar item and its menu
     ├── languages.ts               # languageId → display name and icon
     ├── ipc/
     │   ├── getIpcPath.ts          # pipe path per OS (Windows only for now)
@@ -237,13 +262,14 @@ vscode-discord-presence/
     │   └── discordIpc.ts          # connect, handshake, send, reconnect
     ├── presence/
     │   ├── activityBuilder.ts     # state + settings → activity (pure), ICON_BASE_URL
+    │   ├── connectionStatus.ts    # status bar state and text (pure)
     │   ├── hiddenWorkspaces.ts    # hiddenWorkspaces matching (pure)
     │   ├── presenceController.ts  # editor and focus events, idle, debounce, throttle
     │   └── windowLeader.ts        # which window is connected (globalState)
     └── test/                      # unit tests for the pure modules
 ```
 
-- `frame.ts`, `activityBuilder.ts`, `hiddenWorkspaces.ts`, and `languages.ts` do not import `vscode`, so they can be tested with plain values.
+- `frame.ts`, `activityBuilder.ts`, `connectionStatus.ts`, `hiddenWorkspaces.ts`, and `languages.ts` do not import `vscode`, so they can be tested with plain values.
 - `discordIpc.ts` knows nothing about editors; `presenceController.ts` knows nothing about frames.
 
 `package.json`:
@@ -258,6 +284,7 @@ vscode-discord-presence/
   - `frame.ts`: encoding; decoding a frame split across chunks, several frames in one chunk, and multi-byte UTF-8 JSON.
   - `activityBuilder.ts`: every row and rule in 5.1 and 5.2, each `show*` setting, truncation at 128 characters.
   - `languages.ts`: lookup and fallback, and that every `icon` (plus `vscode`) has a PNG in `assets/icons/`.
+  - `connectionStatus.ts`: the order of the states in 9.1, each IPC state, and the tooltip text.
   - `hiddenWorkspaces.ts`: name and path matching, separators and case, folders inside a path, remote paths, multi-root workspaces, and a window without a workspace.
 - Manual tests: F5 (Extension Development Host) with the Discord desktop app running. Each milestone in 13 lists what to check.
 - There are no automated tests against a real Discord client.
@@ -293,7 +320,6 @@ Each milestone ends with manual test steps for the user. The next one starts aft
 
 - Linux support (`discord-ipc.md` §1)
 - Share the start time across windows (`globalState`)
-- Connection state in the status bar
 - A setting to choose the activity title (the text after "Playing"), like `vscord.app.name` in vscord. **Deferred** (#8, closed as not planned): a custom title already works through `discordPresence.clientId` (README, "Changing the Name After "Playing"").
   - The title is the Discord application name tied to the Client ID and cannot be set in `SET_ACTIVITY`, so each choice needs its own registered Discord application.
   - Plan if reopened: `discordPresence.appName` with fixed choices (e.g. `Visual Studio Code`, `VS Code`, `Code`) mapped to built-in Client IDs, plus `Custom`, which uses `discordPresence.clientId`. Register the applications in the Discord Developer Portal first.

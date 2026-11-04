@@ -50,9 +50,25 @@ To update, install the new `.vsix` the same way. To uninstall, use the Extension
 | `discordPresence.showLanguage` | `true` | Show the language name and icon (VS Code logo only when off) |
 | `discordPresence.showVSCodeLogo` | `true` | Show the small VS Code logo in the corner of the language icon |
 | `discordPresence.showWorkspace` | `true` | Show the workspace name |
+| `discordPresence.hiddenWorkspaces` | `[]` | Workspace names or folder paths where the activity is hidden (see below) |
+| `discordPresence.hiddenWorkspaceMode` | `"hide"` | `hide` shows nothing; `mask` shows only `Editing a file` and the VS Code logo |
 | `discordPresence.idleTimeoutMinutes` | `5` | Minutes after VS Code loses focus before showing `Idling`; `0` is immediate |
 
 The elapsed time cannot be hidden: when it is not sent, Discord counts its own.
+
+### Hiding Specific Workspaces
+
+Add workspace names or folder paths to `discordPresence.hiddenWorkspaces` in your user settings. Nothing needs to be added to the workspace itself.
+
+```json
+"discordPresence.hiddenWorkspaces": ["school-report", "C:/work"],
+"discordPresence.hiddenWorkspaceMode": "hide"
+```
+
+- An item with `/` or `\` is a folder path and also covers the folders inside it (`C:/work` hides `C:/work/app`). Any other item is a workspace name, the name after "In". Case is ignored. In `settings.json`, write `\` as `\\`, or use `/`.
+- In a multi-root workspace, one matching folder hides the whole window.
+- In Remote-SSH, WSL, and Dev Containers, write the remote path (e.g. `/home/me/work`).
+- `hide`: Discord shows nothing while that window is the last focused one. `mask`: Discord shows `Editing a file` with the VS Code logo, without the file, language, or workspace name.
 
 ### Changing the Name After "Playing"
 

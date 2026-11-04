@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import type { PresenceSettings } from './presence/activityBuilder';
+import { isHiddenWorkspace } from './presence/hiddenWorkspaces';
 
 export const DEFAULT_CLIENT_ID = '1566793053941923881';
 
@@ -30,10 +31,44 @@ export function getIdleTimeoutMs(): number {
 
 export function getPresenceSettings(): PresenceSettings {
 	const config = getConfig();
+	const masked = isCurrentWorkspaceHidden() && getHiddenWorkspaceMode() === 'mask';
 	return {
-		showFileName: config.get<boolean>('showFileName', true),
-		showLanguage: config.get<boolean>('showLanguage', true),
+		showFileName: !masked && config.get<boolean>('showFileName', true),
+		showLanguage: !masked && config.get<boolean>('showLanguage', true),
 		showVSCodeLogo: config.get<boolean>('showVSCodeLogo', true),
-		showWorkspace: config.get<boolean>('showWorkspace', true),
+		showWorkspace: !masked && config.get<boolean>('showWorkspace', true),
 	};
+}
+
+export type HiddenWorkspaceMode = 'hide' | 'mask';
+
+// 不正な値は、何も送らない側に倒す
+export function getHiddenWorkspaceMode(): HiddenWorkspaceMode {
+	return getConfig().get<string>('hiddenWorkspaceMode') === 'mask' ? 'mask' : 'hide';
+}
+
+export function isCurrentWorkspaceHidden(): boolean {
+	const configured = getConfig().get<unknown>('hiddenWorkspaces', []);
+	const entries = Array.isArray(configured)
+		? configured.filter((entry): entry is string => typeof entry === 'string')
+		: [];
+	if (entries.length === 0) {
+		return false;
+	}
+	const { name, workspaceFolders, workspaceFile } = vscode.workspace;
+	const paths = (workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
+	// 保存前のマルチルートワークスペースは untitled スキームの仮の場所なので、パスとして比べない
+	if (workspaceFile && workspaceFile.scheme !== 'untitled') {
+		paths.push(workspaceFile.fsPath);
+	}
+	return isHiddenWorkspace({ name, paths }, entries);
+}
+
+// hide のときは接続しないことで、ほかのウィンドウの表示も残さない（requirements.md §5.6）
+export function isHiddenByHideMode(): boolean {
+	return isCurrentWorkspaceHidden() && getHiddenWorkspaceMode() === 'hide';
+}
+
+export function shouldConnect(): boolean {
+	return isEnabled() && !isHiddenByHideMode();
 }

@@ -61,7 +61,7 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 | Process ID | `process.pid` | (required by `SET_ACTIVITY`, not shown) |
 
 - NEVER sent: full paths, folder names other than the workspace name, file contents, Git branch or remote, user names.
-- Everything in the activity is visible to anyone who can see the user's Discord profile. The `show*` settings exist so the user can hide what should not be public.
+- Everything in the activity is visible to anyone who can see the user's Discord profile. The `show*` settings exist so the user can hide what should not be public. `hiddenWorkspaces` hides the activity in chosen workspaces (5.6).
 - Icon images are fetched by Discord from GitHub raw URLs (see 6.2), not by the extension.
 - The Client ID is public information and may be embedded. A Client Secret or bot token is not needed and must never be in the code.
 
@@ -125,7 +125,24 @@ The extension sends data only to the Discord desktop app on the same machine, ov
   - The 1.5 s wait lets the previous window disconnect first, so the new connection is the only one.
 - The connected window keeps its connection after losing focus to another app, and switches to the idle display after `idleTimeoutMinutes` (5.3). Windows that are not connected send nothing, so they never overwrite the display.
 - A window that has never been focused since it started does not connect.
+- A window hidden by `hiddenWorkspaces` with `hiddenWorkspaceMode` `hide` still takes the leader role when focused, but does not connect, so Discord shows nothing (5.6).
 - Switching windows reconnects each time (about 0.3 s for the handshake in testing).
+
+### 5.6 Hidden Workspaces
+
+- `discordPresence.hiddenWorkspaces` lists the workspaces where the activity is hidden. The matching is in `src/presence/hiddenWorkspaces.ts`.
+  - An item containing `/` or `\` is a path; any other item is a name. Items are trimmed, and empty items are ignored.
+  - Name: compared with `vscode.workspace.name` (the name in `In <workspace name>`), ignoring case.
+  - Path: compared with the `fsPath` of each workspace folder and of the `.code-workspace` file (except an `untitled` one). Both sides use `/` as the separator, drop trailing separators, and ignore case, so the comparison errs toward hiding. A folder inside a listed path also matches; `C:\work` does not match `C:\workshop`.
+  - Remote folders match their remote path (e.g. `/home/me/app`). Their `fsPath` on Windows uses `\`, which the normalization handles.
+  - A multi-root workspace is hidden when any of its folders matches. A window without a folder or workspace never matches.
+  - Paths are compared locally only and never sent (4).
+- `discordPresence.hiddenWorkspaceMode`:
+  - `hide` (default): the window does not connect, the same as `enabled` false. It still takes the leader role when focused (5.5), so the other windows disconnect and Discord shows nothing.
+  - `mask`: the window connects and sends the display for `showFileName`, `showLanguage`, and `showWorkspace` all false: `Editing a file`, the large VS Code logo, and no `state`. The idle display is unchanged. `getPresenceSettings` in `config.ts` applies it; `activityBuilder.ts` does not know about it.
+  - Any other value is treated as `hide`, which sends nothing.
+- Changes to either setting or to the workspace folders apply at once.
+- Confirmed with two windows: with `hide`, focusing the hidden window cleared the display, and the other window showed its activity again when focused. With `mask`, only `Editing a file` and the VS Code logo were shown. A name, a folder path, and a parent folder path all matched, and an empty list restored the normal display at once.
 
 ## 6. Language Names and Icons
 
@@ -164,12 +181,15 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 | `discordPresence.showLanguage` | boolean | `true` | Show the language name and icon |
 | `discordPresence.showVSCodeLogo` | boolean | `true` | Show the small VS Code logo in the corner of the language icon |
 | `discordPresence.showWorkspace` | boolean | `true` | Show the workspace name |
+| `discordPresence.hiddenWorkspaces` | string[] | `[]` | Workspace names or folder paths where the activity is hidden (5.6) |
+| `discordPresence.hiddenWorkspaceMode` | `"hide"` \| `"mask"` | `"hide"` | `hide`: show nothing; `mask`: show only `Editing a file` and the VS Code logo (5.6) |
 | `discordPresence.idleTimeoutMinutes` | number | `5` | Minutes after losing focus before the idle display; `0` is immediate. Minimum `0`. |
 
 - `DEFAULT_CLIENT_ID` in `src/config.ts` is filled in by the author after registering the Discord application.
 - Changes are applied at once through `onDidChangeConfiguration`:
   - `show*` and `idleTimeoutMinutes`: rebuild and resend the activity.
   - `clientId`: disconnect and reconnect with the new ID.
+  - `hiddenWorkspaces`, `hiddenWorkspaceMode`, and the workspace folders (`onDidChangeWorkspaceFolders`): connect or disconnect for `hide`, then rebuild and resend the activity.
   - `enabled` false: clear the activity and disconnect. `enabled` true: connect.
 
 ## 8. Commands
@@ -179,7 +199,7 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 | `discordPresence.reconnect` | Discord Presence: Reconnect | Disconnect, then connect at once (without waiting for the reconnect interval) |
 | `discordPresence.toggle` | Discord Presence: Toggle | Invert `discordPresence.enabled` in the user (global) settings |
 
-- `reconnect` only logs and does nothing when `enabled` is false or another window is the connected one (5.5).
+- `reconnect` only logs and does nothing when `enabled` is false, the workspace is hidden with `hide` (5.6), or another window is the connected one (5.5).
 - Titles are shown as `Discord Presence: <title>` through `"category": "Discord Presence"`.
 
 ## 9. Connection and Error Handling
@@ -217,12 +237,13 @@ vscode-discord-presence/
     │   └── discordIpc.ts          # connect, handshake, send, reconnect
     ├── presence/
     │   ├── activityBuilder.ts     # state + settings → activity (pure), ICON_BASE_URL
+    │   ├── hiddenWorkspaces.ts    # hiddenWorkspaces matching (pure)
     │   ├── presenceController.ts  # editor and focus events, idle, debounce, throttle
     │   └── windowLeader.ts        # which window is connected (globalState)
-    └── test/                      # unit tests for frame and activityBuilder
+    └── test/                      # unit tests for the pure modules
 ```
 
-- `frame.ts` and `activityBuilder.ts` do not import `vscode`, so they can be tested with plain values.
+- `frame.ts`, `activityBuilder.ts`, `hiddenWorkspaces.ts`, and `languages.ts` do not import `vscode`, so they can be tested with plain values.
 - `discordIpc.ts` knows nothing about editors; `presenceController.ts` knows nothing about frames.
 
 `package.json`:
@@ -237,6 +258,7 @@ vscode-discord-presence/
   - `frame.ts`: encoding; decoding a frame split across chunks, several frames in one chunk, and multi-byte UTF-8 JSON.
   - `activityBuilder.ts`: every row and rule in 5.1 and 5.2, each `show*` setting, truncation at 128 characters.
   - `languages.ts`: lookup and fallback, and that every `icon` (plus `vscode`) has a PNG in `assets/icons/`.
+  - `hiddenWorkspaces.ts`: name and path matching, separators and case, folders inside a path, remote paths, multi-root workspaces, and a window without a workspace.
 - Manual tests: F5 (Extension Development Host) with the Discord desktop app running. Each milestone in 13 lists what to check.
 - There are no automated tests against a real Discord client.
 
@@ -272,7 +294,6 @@ Each milestone ends with manual test steps for the user. The next one starts aft
 - Linux support (`discord-ipc.md` §1)
 - Share the start time across windows (`globalState`)
 - Connection state in the status bar
-- A setting to hide the activity in specific workspaces
 - A setting to choose the activity title (the text after "Playing"), like `vscord.app.name` in vscord. **Deferred** (#8, closed as not planned): a custom title already works through `discordPresence.clientId` (README, "Changing the Name After "Playing"").
   - The title is the Discord application name tied to the Client ID and cannot be set in `SET_ACTIVITY`, so each choice needs its own registered Discord application.
   - Plan if reopened: `discordPresence.appName` with fixed choices (e.g. `Visual Studio Code`, `VS Code`, `Code`) mapped to built-in Client IDs, plus `Custom`, which uses `discordPresence.clientId`. Register the applications in the Discord Developer Portal first.

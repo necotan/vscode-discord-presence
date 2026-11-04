@@ -36,6 +36,8 @@ export class PresenceController implements vscode.Disposable {
 			vscode.window.tabGroups.onDidChangeTabs(() => this.handleTabsChange()),
 			vscode.window.onDidChangeWindowState((state) => this.handleWindowState(state)),
 			vscode.workspace.onDidChangeConfiguration((event) => this.handleConfigurationChange(event)),
+			// フォルダの追加や削除で、ワークスペース名や hiddenWorkspaces の一致が変わるため
+			vscode.workspace.onDidChangeWorkspaceFolders(() => this.requestUpdate()),
 		);
 	}
 

@@ -62,11 +62,34 @@
           "order": 5,
           "description": "Show the workspace name."
         },
+        "discordPresence.hiddenWorkspaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "order": 6,
+          "markdownDescription": "Workspaces where the activity is hidden. Each item is a workspace name (e.g. `my-app`) or a folder path (e.g. `C:\\work`), which also covers the folders inside it. Case is ignored. See `#discordPresence.hiddenWorkspaceMode#` for how they are hidden."
+        },
+        "discordPresence.hiddenWorkspaceMode": {
+          "type": "string",
+          "enum": [
+            "hide",
+            "mask"
+          ],
+          "enumDescriptions": [
+            "Show nothing on Discord.",
+            "Show only \"Editing a file\" and the VS Code logo."
+          ],
+          "default": "hide",
+          "order": 7,
+          "description": "How the activity is hidden in the workspaces in Hidden Workspaces."
+        },
         "discordPresence.idleTimeoutMinutes": {
           "type": "number",
           "default": 5,
           "minimum": 0,
-          "order": 6,
+          "order": 8,
           "description": "Minutes after VS Code loses focus before showing Idling. 0 shows it immediately."
         }
       }

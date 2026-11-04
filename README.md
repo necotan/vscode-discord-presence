@@ -27,7 +27,7 @@ With several VS Code windows open, the window you focused last is shown.
 - Windows
 - The Discord desktop app (Discord in a browser is not supported)
 - VS Code 1.144 or later
-- In Discord, **User Settings > Activity Privacy → share your detected activities** must be on.
+- In Discord, **User Settings > Activity Privacy > share your detected activities** must be on.
 
 Remote-SSH, WSL, and Dev Containers work: the extension runs on your local machine, where Discord is.
 
@@ -119,4 +119,4 @@ npx @vscode/vsce@4.0.0 package
 
 ## License
 
-[MIT](LICENSE)
+[MIT License](LICENSE)

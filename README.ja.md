@@ -114,9 +114,9 @@ npx @vscode/vsce@4.0.0 package
 
 ## クレジット
 
-- 言語アイコンと VS Code のロゴ: [devicon](https://github.com/devicons/devicon) v2.17.0、MIT ライセンス（[assets/icons/LICENSE-devicon.txt](assets/icons/LICENSE-devicon.txt)）。PNG に変換して使用しています。
+- 言語アイコンと VS Code のロゴ: [devicon](https://github.com/devicons/devicon) v2.17.0、MIT ライセンス（[assets/icons/LICENSE-devicon.txt](assets/icons/LICENSE-devicon.txt)）をPNG に変換して使用しています。
 - 各ロゴは、それぞれの持ち主の商標です。Visual Studio Code は Microsoft の商標です。この拡張機能は Microsoft および Discord とは関係がなく、承認も受けていません。
 
 ## ライセンス
 
-[MIT](LICENSE)
+[MIT License](LICENSE)

@@ -104,8 +104,26 @@
         "command": "discordPresence.toggle",
         "title": "Toggle",
         "category": "Discord Presence"
+      },
+      {
+        "command": "discordPresence.showLog",
+        "title": "Show Log",
+        "category": "Discord Presence"
+      },
+      {
+        "command": "discordPresence.showMenu",
+        "title": "Show Menu",
+        "category": "Discord Presence"
       }
-    ]
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "discordPresence.showMenu",
+          "when": "false"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

@@ -29,17 +29,18 @@ The specs are the source of truth for what to build; read the relevant section b
 ## After every change
 
 - Run `npm run lint` and `npm run compile`.
-- If `src/ipc/frame.ts`, `src/presence/activityBuilder.ts`, `src/presence/hiddenWorkspaces.ts`, or `src/languages.ts` changed, run `npm test`.
+- If `src/ipc/frame.ts`, `src/presence/activityBuilder.ts`, `src/presence/hiddenWorkspaces.ts`, `src/presence/connectionStatus.ts`, or `src/languages.ts` changed, run `npm test`.
 - If an `icon` was added to `src/languages.ts`, run `npm run generate:icons` and commit the new PNG.
 - If settings or commands changed, keep `package.json` (`contributes`), `src/config.ts`, `docs/requirements.md` §7–8, and the README in sync.
 
 ## Layout
 
 - `src/extension.ts`: `activate` / `deactivate`; wires the modules together only.
+- `src/statusBar.ts`: the status bar item and its menu.
 - `src/config.ts`: reads settings; holds `DEFAULT_CLIENT_ID`. `ICON_BASE_URL` is in `activityBuilder.ts`, which must not import `config.ts` (it imports `vscode`).
 - `src/languages.ts`: `languageId` → display name and icon name.
 - `src/ipc/`: Discord IPC client (`getIpcPath.ts`, `frame.ts`, `discordIpc.ts`).
-- `src/presence/`: `activityBuilder.ts` (pure), `hiddenWorkspaces.ts` (pure, `hiddenWorkspaces` matching), `presenceController.ts` (VS Code events, idle, throttling), and `windowLeader.ts` (only the last focused window connects).
+- `src/presence/`: `activityBuilder.ts` (pure), `connectionStatus.ts` (pure, status bar state and text), `hiddenWorkspaces.ts` (pure, `hiddenWorkspaces` matching), `presenceController.ts` (VS Code events, idle, throttling), and `windowLeader.ts` (only the last focused window connects).
 - `src/test/`: unit tests. `assets/icons/`: generated icon PNGs served to Discord from GitHub raw URLs; do not edit by hand. `scripts/generateIcons.mjs`: builds them.
 - `out/`, `.vscode-test/`, `*.vsix`: generated and git-ignored. Do not edit.
 - `docs/`: only the two specs are tracked; anything else there is git-ignored local notes. When behavior or the protocol handling changes, update the spec in the same change.
@@ -60,7 +61,7 @@ The specs are the source of truth for what to build; read the relevant section b
 
 ### Purity and tests
 
-- `activityBuilder.ts`, `hiddenWorkspaces.ts`, `frame.ts`, and `languages.ts` MUST NOT import `vscode`. They take plain values and return plain values, so they can be unit tested.
+- `activityBuilder.ts`, `connectionStatus.ts`, `hiddenWorkspaces.ts`, `frame.ts`, and `languages.ts` MUST NOT import `vscode`. They take plain values and return plain values, so they can be unit tested.
 - Add or update unit tests when changing them.
 
 ### Discord

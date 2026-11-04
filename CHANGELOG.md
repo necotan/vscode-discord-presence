@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+- Added a status bar item that shows whether this window is shown on Discord, with a menu to turn it off or on, reconnect, show the log, or open the settings.
+- Added the **Discord Presence: Show Log** command.
+
 ## [0.2.0] - 2026-11-04
 
 - Added `hiddenWorkspaces` and `hiddenWorkspaceMode` to hide the activity, or show only "Editing a file", in chosen workspaces.

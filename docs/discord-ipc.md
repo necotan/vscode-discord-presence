@@ -103,6 +103,7 @@ Exceptions:
 - Confirmed (#11): after quitting and restarting Discord, the activity came back about 4 s after the restart, with the same elapsed time. The start time lives in `presenceController.ts` and is not reset by a reconnect. The wait can be up to 15 s, depending on when the next retry fires.
 - `reconnect` command: cancel the timer, close the socket, and connect at once.
 - `enabled` false: cancel the timer and do not retry.
+- `onStateChange` reports `stopped` (`stop`), `connecting` (a connection attempt), `waiting` (a retry is scheduled), and `connected` (`READY`), only when the state changes. An attempt started by the retry timer stays `waiting` until `READY`.
 
 ## 8. Shutdown
 

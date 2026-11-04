@@ -271,3 +271,7 @@ Each milestone ends with manual test steps for the user. The next one starts aft
 - Share the start time across windows (`globalState`)
 - Connection state in the status bar
 - A setting to hide the activity in specific workspaces
+- A setting to choose the activity title (the text after "Playing"), like `vscord.app.name` in vscord
+  - The title is the Discord application name tied to the Client ID and cannot be set in `SET_ACTIVITY`, so each choice needs its own registered Discord application.
+  - Plan: `discordPresence.appName` with fixed choices (e.g. `Visual Studio Code`, `VS Code`, `Code`) mapped to built-in Client IDs, plus `Custom`, which uses `discordPresence.clientId`.
+  - Before implementing, register the applications in the Discord Developer Portal and decide the choices.

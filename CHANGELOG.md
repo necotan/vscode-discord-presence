@@ -4,6 +4,7 @@
 
 - Added `showVSCodeLogo` to hide the small VS Code logo in the corner of the language icon.
 - Clarified that `clientId` changes the name shown after "Playing", and added the steps to the README.
+- Added `hiddenWorkspaces` and `hiddenWorkspaceMode` to hide the activity, or show only "Editing a file", in chosen workspaces.
 
 ## [0.1.0] - 2026-11-03
 

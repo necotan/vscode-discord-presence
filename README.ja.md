@@ -50,9 +50,25 @@ Marketplace には公開していません。`.vsix` ファイルからインス
 | `discordPresence.showLanguage` | `true` | 言語名とアイコンを表示する（オフのときは VS Code のロゴだけ） |
 | `discordPresence.showVSCodeLogo` | `true` | 言語アイコンの右下に、小さな VS Code のロゴを表示する |
 | `discordPresence.showWorkspace` | `true` | ワークスペース名を表示する |
+| `discordPresence.hiddenWorkspaces` | `[]` | 表示を隠すワークスペースの名前かフォルダのパス（下を参照） |
+| `discordPresence.hiddenWorkspaceMode` | `"hide"` | `hide` は何も表示しない。`mask` は `Editing a file` と VS Code のロゴだけを表示する |
 | `discordPresence.idleTimeoutMinutes` | `5` | VS Code からフォーカスが外れてから `Idling` にするまでの分数。`0` ですぐ |
 
 経過時間は消せません。送らなかった場合でも、Discord が自分で数えて表示するためです。
+
+### 特定のワークスペースで隠す
+
+ユーザー設定の `discordPresence.hiddenWorkspaces` に、ワークスペースの名前かフォルダのパスを書きます。ワークスペース側には何も置かなくて済みます。
+
+```json
+"discordPresence.hiddenWorkspaces": ["school-report", "C:/work"],
+"discordPresence.hiddenWorkspaceMode": "hide"
+```
+
+- `/` か `\` を含む項目はフォルダのパスとして扱い、その中のフォルダも隠れます（`C:/work` で `C:/work/app` も隠れる）。それ以外の項目はワークスペース名（「In」の後ろの名前）です。大文字と小文字は区別しません。`settings.json` では `\` を `\\` と書くか、`/` を使ってください。
+- マルチルートのワークスペースでは、どれか1つのフォルダが一致すると、そのウィンドウ全体が隠れます。
+- Remote-SSH、WSL、Dev Containers では、リモート側のパス（例: `/home/me/work`）を書きます。
+- `hide`: そのウィンドウが最後にフォーカスしたウィンドウの間、Discord には何も表示されません。`mask`: ファイル名、言語、ワークスペース名を出さずに、`Editing a file` と VS Code のロゴだけを表示します。
 
 ### 「プレイ中」の名前を変える
 

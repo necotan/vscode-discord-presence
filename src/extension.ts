@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { CONFIG_SECTION, getClientId, isEnabled, toggleEnabled } from './config';
+import { CONFIG_SECTION, getClientId, isEnabled, shouldConnect, toggleEnabled } from './config';
 import { DiscordIpcClient } from './ipc/discordIpc';
 import { PresenceController } from './presence/presenceController';
 import { WindowLeader } from './presence/windowLeader';
@@ -17,11 +17,14 @@ export function activate(context: vscode.ExtensionContext): void {
 	const ipc = new DiscordIpcClient({ clientId: getClientId(), logger, onReady: () => presence.handleReady() });
 
 	const updateConnection = (): void => {
-		if (isEnabled() && isLeader) {
+		if (isLeader && shouldConnect()) {
 			ipc.start();
-		} else {
-			void ipc.stop();
+			return;
 		}
+		if (isLeader && isEnabled()) {
+			logger.info('Not connecting: this workspace is in discordPresence.hiddenWorkspaces');
+		}
+		void ipc.stop();
 	};
 
 	const leader = new WindowLeader(context.globalState, (leaderNow) => {
@@ -39,13 +42,18 @@ export function activate(context: vscode.ExtensionContext): void {
 			if (event.affectsConfiguration(`${CONFIG_SECTION}.clientId`)) {
 				ipc.setClientId(getClientId());
 			}
+			if (event.affectsConfiguration(`${CONFIG_SECTION}.hiddenWorkspaces`)
+				|| event.affectsConfiguration(`${CONFIG_SECTION}.hiddenWorkspaceMode`)) {
+				updateConnection();
+			}
 		}),
+		vscode.workspace.onDidChangeWorkspaceFolders(() => updateConnection()),
 		vscode.commands.registerCommand('discordPresence.reconnect', () => {
-			if (isEnabled() && isLeader) {
+			if (isLeader && shouldConnect()) {
 				logger.info('Reconnecting');
 				ipc.reconnect();
 			} else {
-				logger.info('Not reconnecting: disabled, or another window is shown on Discord');
+				logger.info('Not reconnecting: disabled, hidden in this workspace, or another window is shown on Discord');
 			}
 		}),
 		vscode.commands.registerCommand('discordPresence.toggle', async () => {

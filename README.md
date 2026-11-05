@@ -14,7 +14,7 @@
 Your Discord profile shows **Playing Visual Studio Code** with:
 
 - `Editing <file name>`
-- `In <workspace name>`
+- `In <workspace name>` (the folder name, or the name of the `.code-workspace` file; an unsaved multi-root workspace has no name, so this line is not shown until you save it)
 - The language icon (hover to see the language name), with the VS Code logo in the corner
 - The elapsed time since the VS Code window opened
 

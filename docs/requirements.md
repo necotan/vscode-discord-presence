@@ -297,6 +297,7 @@ vscode-discord-presence/
   - `config.ts`: where `toggleEnabled` writes, with a fake configuration.
 - Manual tests: F5 (Extension Development Host) with the Discord desktop app running. Each milestone in 13 lists what to check.
 - There are no automated tests against a real Discord client.
+- CI: `.github/workflows/ci.yml` runs `npm ci` and `npm test` on `windows-latest` for each pull request and each push to `main`. `npm test` includes `compile` and `lint`.
 
 ## 12. Distribution
 
@@ -305,7 +306,7 @@ vscode-discord-presence/
   - Do not change `publisher` or `name`: a different ID installs as a separate extension, and both copies would connect to Discord.
 - Versioning: the first release is `0.1.0`. Record each release in `CHANGELOG.md`.
 - `README.md` (English) and `README.ja.md` (Japanese) have the same sections: features, requirements, installation, settings, commands, what is sent to Discord (4), development, credits (devicon and trademarks), license. Update both together.
-- `.vscodeignore` keeps `src/`, maps, `out/test/`, `assets/` (served from GitHub), `scripts/`, `docs/`, `CLAUDE.md`, and `README.ja.md` out of the `.vsix`. The `.vsix` holds `out/` (without tests), `package.json`, `README.md`, `CHANGELOG.md`, and `LICENSE` (about 20 KB). Check with `npx @vscode/vsce@4.0.0 ls` after adding files.
+- `.vscodeignore` keeps `.github/`, `src/`, maps, `out/test/`, `assets/` (served from GitHub), `scripts/`, `docs/`, `CLAUDE.md`, and `README.ja.md` out of the `.vsix`. The `.vsix` holds `out/` (without tests), `package.json`, `README.md`, `CHANGELOG.md`, and `LICENSE` (about 20 KB). Check with `npx @vscode/vsce@4.0.0 ls` after adding files.
 
 ## 13. Milestones
 

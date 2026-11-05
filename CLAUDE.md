@@ -42,6 +42,7 @@ The specs are the source of truth for what to build; read the relevant section b
 - `src/ipc/`: Discord IPC client (`getIpcPath.ts`, `frame.ts`, `discordIpc.ts`).
 - `src/presence/`: `activityBuilder.ts` (pure), `connectionStatus.ts` (pure, status bar state and text), `hiddenWorkspaces.ts` (pure, `hiddenWorkspaces` matching), `workspaceName.ts` (pure, the workspace name sent to Discord), `presenceController.ts` (VS Code events, idle, throttling), and `windowLeader.ts` (only the last focused window connects).
 - `src/test/`: unit tests; `fakeDiscord.ts` is a fake Discord IPC server for them. `assets/icons/`: generated icon PNGs served to Discord from GitHub raw URLs; do not edit by hand. `scripts/generateIcons.mjs`: builds them.
+- `.github/workflows/ci.yml`: runs `npm test` on Windows for each pull request and each push to `main`.
 - `out/`, `.vscode-test/`, `*.vsix`: generated and git-ignored. Do not edit.
 - `docs/`: only the two specs are tracked; anything else there is git-ignored local notes. When behavior or the protocol handling changes, update the spec in the same change.
 - Module responsibilities in detail: `docs/requirements.md` §10.

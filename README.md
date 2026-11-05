@@ -9,6 +9,16 @@
   No runtime dependencies: it talks to Discord through its local IPC with Node.js built-ins only.
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/VS%20Code-1.144%2B-007ACC" alt="VS Code 1.144+">
+  <img src="https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white" alt="TypeScript 6">
+  <img src="https://img.shields.io/badge/Discord-Rich%20Presence-5865F2?logo=discord&logoColor=white" alt="Discord Rich Presence">
+  <img src="https://img.shields.io/badge/Platform-Windows-0078D4" alt="Platform: Windows">
+  <br>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="License: MIT"></a>
+  <a href="https://github.com/necotan/vscode-discord-presence/releases/latest"><img src="https://img.shields.io/github/v/release/necotan/vscode-discord-presence?label=Release" alt="Latest release"></a>
+</p>
+
 ## Features
 
 Your Discord profile shows **Playing Visual Studio Code** with:

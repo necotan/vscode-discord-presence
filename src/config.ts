@@ -15,14 +15,15 @@ export function isEnabled(): boolean {
 	return getConfig().get<boolean>('enabled', true);
 }
 
+export type ToggleConfig = Pick<vscode.WorkspaceConfiguration, 'get' | 'inspect' | 'update'>;
+
 // ユーザー設定だけを書き換えると、ワークスペース設定で上書きされているときに切り替わらないため、
 // 値が書かれているいちばん強い場所を書き換える。書き換えた場所を返す
-export async function toggleEnabled(): Promise<vscode.ConfigurationTarget> {
-	const config = getConfig();
+export async function toggleEnabled(config: ToggleConfig = getConfig()): Promise<vscode.ConfigurationTarget> {
 	const target = config.inspect<boolean>('enabled')?.workspaceValue !== undefined
 		? vscode.ConfigurationTarget.Workspace
 		: vscode.ConfigurationTarget.Global;
-	await config.update('enabled', !isEnabled(), target);
+	await config.update('enabled', !config.get<boolean>('enabled', true), target);
 	return target;
 }
 

@@ -34,6 +34,9 @@ export interface DiscordIpcOptions {
 	logger: Logger;
 	onReady: () => void;
 	onStateChange: (state: IpcState) => void;
+	// テストで本物の Discord につながず、再試行を待たずに済むよう差し替えられるようにする
+	getPaths?: () => string[];
+	retryIntervalMs?: number;
 }
 
 interface IpcMessage {
@@ -59,9 +62,11 @@ export class DiscordIpcClient {
 	private state: IpcState = 'stopped';
 
 	private clientId: string;
+	private readonly retryIntervalMs: number;
 
 	constructor(private readonly options: DiscordIpcOptions) {
 		this.clientId = options.clientId;
+		this.retryIntervalMs = options.retryIntervalMs ?? RETRY_INTERVAL_MS;
 	}
 
 	// ハンドシェイクでしか Client ID を渡せないため、変わったら接続し直す
@@ -113,7 +118,7 @@ export class DiscordIpcClient {
 		if (this.state !== 'waiting') {
 			this.setState('connecting');
 		}
-		const paths = getIpcPaths();
+		const paths = (this.options.getPaths ?? getIpcPaths)();
 		if (paths.length === 0) {
 			this.options.logger.error(`Unsupported platform: ${process.platform}`);
 			return;
@@ -130,7 +135,7 @@ export class DiscordIpcClient {
 				return;
 			}
 		}
-		this.options.logger.info(`Discord not found. Retrying in ${RETRY_INTERVAL_MS / 1000} s`);
+		this.options.logger.info(`Discord not found. Retrying in ${this.retryIntervalMs / 1000} s`);
 		this.scheduleRetry();
 	}
 
@@ -220,7 +225,7 @@ export class DiscordIpcClient {
 		if (!this.running) {
 			return;
 		}
-		this.options.logger.info(`Disconnected (${reason}). Retrying in ${RETRY_INTERVAL_MS / 1000} s`);
+		this.options.logger.info(`Disconnected (${reason}). Retrying in ${this.retryIntervalMs / 1000} s`);
 		this.scheduleRetry();
 	}
 
@@ -270,7 +275,7 @@ export class DiscordIpcClient {
 		this.retryTimer = setTimeout(() => {
 			this.retryTimer = undefined;
 			void this.connect();
-		}, RETRY_INTERVAL_MS);
+		}, this.retryIntervalMs);
 	}
 
 	private setState(state: IpcState): void {

@@ -29,7 +29,7 @@ The specs are the source of truth for what to build; read the relevant section b
 ## After every change
 
 - Run `npm run lint` and `npm run compile`.
-- If `src/ipc/frame.ts`, `src/presence/activityBuilder.ts`, `src/presence/hiddenWorkspaces.ts`, `src/presence/workspaceName.ts`, `src/presence/connectionStatus.ts`, or `src/languages.ts` changed, run `npm test`.
+- If `src/ipc/frame.ts`, `src/ipc/discordIpc.ts`, `src/presence/activityBuilder.ts`, `src/presence/hiddenWorkspaces.ts`, `src/presence/workspaceName.ts`, `src/presence/connectionStatus.ts`, `src/presence/windowLeader.ts`, `src/config.ts`, or `src/languages.ts` changed, run `npm test`.
 - If an `icon` was added to `src/languages.ts`, run `npm run generate:icons` and commit the new PNG.
 - If settings or commands changed, keep `package.json` (`contributes`), `src/config.ts`, `docs/requirements.md` §7–8, and the README in sync.
 
@@ -41,7 +41,7 @@ The specs are the source of truth for what to build; read the relevant section b
 - `src/languages.ts`: `languageId` → display name and icon name.
 - `src/ipc/`: Discord IPC client (`getIpcPath.ts`, `frame.ts`, `discordIpc.ts`).
 - `src/presence/`: `activityBuilder.ts` (pure), `connectionStatus.ts` (pure, status bar state and text), `hiddenWorkspaces.ts` (pure, `hiddenWorkspaces` matching), `workspaceName.ts` (pure, the workspace name sent to Discord), `presenceController.ts` (VS Code events, idle, throttling), and `windowLeader.ts` (only the last focused window connects).
-- `src/test/`: unit tests. `assets/icons/`: generated icon PNGs served to Discord from GitHub raw URLs; do not edit by hand. `scripts/generateIcons.mjs`: builds them.
+- `src/test/`: unit tests; `fakeDiscord.ts` is a fake Discord IPC server for them. `assets/icons/`: generated icon PNGs served to Discord from GitHub raw URLs; do not edit by hand. `scripts/generateIcons.mjs`: builds them.
 - `out/`, `.vscode-test/`, `*.vsix`: generated and git-ignored. Do not edit.
 - `docs/`: only the two specs are tracked; anything else there is git-ignored local notes. When behavior or the protocol handling changes, update the spec in the same change.
 - Module responsibilities in detail: `docs/requirements.md` §10.

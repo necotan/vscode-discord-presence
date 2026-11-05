@@ -8,24 +8,35 @@ const POLL_MS = 1_000;
 // 前のウィンドウが POLL_MS ごとの確認で接続を切るのを待ってから接続する
 const HANDOVER_DELAY_MS = 1_500;
 
+// フォーカスのイベントはテストから発火できず、待ち時間も長いため差し替えられるようにする
+export interface WindowLeaderOptions {
+	focus?: Pick<typeof vscode.window, 'state' | 'onDidChangeWindowState'>;
+	pollMs?: number;
+	handoverDelayMs?: number;
+}
+
 export class WindowLeader implements vscode.Disposable {
 	private readonly id = randomUUID();
 	private readonly subscription: vscode.Disposable;
 	private readonly pollTimer: NodeJS.Timeout;
+	private readonly handoverDelayMs: number;
 	private claimTimer: NodeJS.Timeout | undefined;
 	private leader = false;
 
 	constructor(
 		private readonly state: vscode.Memento,
 		private readonly onChange: (leader: boolean) => void,
+		options: WindowLeaderOptions = {},
 	) {
-		this.subscription = vscode.window.onDidChangeWindowState((windowState) => {
+		const focus = options.focus ?? vscode.window;
+		this.handoverDelayMs = options.handoverDelayMs ?? HANDOVER_DELAY_MS;
+		this.subscription = focus.onDidChangeWindowState((windowState) => {
 			if (windowState.focused) {
 				this.claim();
 			}
 		});
-		this.pollTimer = setInterval(() => this.check(), POLL_MS);
-		if (vscode.window.state.focused) {
+		this.pollTimer = setInterval(() => this.check(), options.pollMs ?? POLL_MS);
+		if (focus.state.focused) {
 			this.claim();
 		}
 	}
@@ -49,7 +60,7 @@ export class WindowLeader implements vscode.Disposable {
 			if (this.isCurrentLeader()) {
 				this.setLeader(true);
 			}
-		}, HANDOVER_DELAY_MS);
+		}, this.handoverDelayMs);
 	}
 
 	private check(): void {

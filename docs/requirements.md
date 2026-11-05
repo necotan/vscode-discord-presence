@@ -271,7 +271,7 @@ vscode-discord-presence/
     │   ├── presenceController.ts  # editor and focus events, idle, debounce, throttle
     │   ├── windowLeader.ts        # which window is connected (globalState)
     │   └── workspaceName.ts       # workspace name from its location (pure)
-    └── test/                      # unit tests for the pure modules
+    └── test/                      # unit tests; fakeDiscord.ts is a fake IPC server
 ```
 
 - `frame.ts`, `activityBuilder.ts`, `connectionStatus.ts`, `hiddenWorkspaces.ts`, `workspaceName.ts`, and `languages.ts` do not import `vscode`, so they can be tested with plain values.
@@ -292,6 +292,9 @@ vscode-discord-presence/
   - `connectionStatus.ts`: the order of the states in 9.1, each IPC state, and the tooltip text.
   - `hiddenWorkspaces.ts`: name and path matching, separators and case, folders inside a path, remote paths, multi-root workspaces, and a window without a workspace.
   - `workspaceName.ts`: a folder, a saved and an unsaved workspace, remote locations, root folders, and a window without a workspace.
+  - `discordIpc.ts`: against `src/test/fakeDiscord.ts`, a fake server on its own named pipe, never the real Discord: handshake, sending, retry, disconnect, CLOSE, PING, `stop`, `reconnect`, `setClientId`, and `start` and `stop` racing a connection.
+  - `windowLeader.ts`: claiming, losing and regaining the role between two instances that share a fake `globalState`, in the order of 5.5.
+  - `config.ts`: where `toggleEnabled` writes, with a fake configuration.
 - Manual tests: F5 (Extension Development Host) with the Discord desktop app running. Each milestone in 13 lists what to check.
 - There are no automated tests against a real Discord client.
 

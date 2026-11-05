@@ -56,11 +56,11 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 |---|---|---|
 | File base name (e.g. `extension.ts`) | active text editor | `showFileName` |
 | Language display name | `document.languageId` via `src/languages.ts` | `showLanguage` |
-| Workspace name | `vscode.workspace.name` | `showWorkspace` |
+| Workspace name | the folder or `.code-workspace` file name, not `vscode.workspace.name` (5.1) | `showWorkspace` |
 | Start time | time of `activate` | (always sent, see 5.4) |
 | Process ID | `process.pid` | (required by `SET_ACTIVITY`, not shown) |
 
-- NEVER sent: full paths, folder names other than the workspace name, file contents, Git branch or remote, user names.
+- NEVER sent: full paths, folder names other than the workspace name, file contents, Git branch or remote, user names, remote host names.
 - Everything in the activity is visible to anyone who can see the user's Discord profile. The `show*` settings exist so the user can hide what should not be public. `hiddenWorkspaces` hides the activity in chosen workspaces (5.6).
 - Icon images are fetched by Discord from GitHub raw URLs (see 6.2), not by the extension.
 - The Client ID is public information and may be embedded. A Client Secret or bot token is not needed and must never be in the code.
@@ -82,7 +82,10 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 - `showFileName` is false: `details` is `Editing a file`.
 - `showLanguage` is false: `large_image` is the VS Code logo, `large_text` is `Visual Studio Code`, and `small_image` / `small_text` are omitted.
 - `showVSCodeLogo` is false: `small_image` / `small_text` are omitted, so only the language icon is shown. The large image stays the VS Code logo when there is no language icon (`showLanguage` false, a language without an icon, or idle), because Discord shows a placeholder when `large_image` is missing.
-- `showWorkspace` is false, or no folder or workspace is open: `state` is omitted.
+- `showWorkspace` is false, or the workspace has no name: `state` is omitted.
+- The workspace name comes from the location (`src/presence/workspaceName.ts`): the `.code-workspace` file name without its extension, or the folder name when a single folder is open. An unsaved multi-root workspace and a window without a folder have no name. A folder name is not used in place of the name of an unsaved workspace (4).
+- `vscode.workspace.name` is not sent. It is a display label: VS Code adds `(Workspace)`, translated by language packs, and the suffix of a remote extension, which is the text in brackets in the title bar (read from the VS Code 1.145.0 source; not confirmed in a Remote window, #10).
+- Confirmed in VS Code 1.145.0: `t1-sample.code-workspace` showed `In t1-sample` without `(Workspace)`, a single folder showed `In window-a`, and the item `t1-sample` in `hiddenWorkspaces` hid the saved workspace. An unsaved multi-root workspace and an item written as the label are covered by unit tests only.
 - String fields are limited to 128 characters; longer text is cut and ends with `…` (`discord-ipc.md` §5). Text shorter than 2 characters (e.g. the language names `C` and `R`) is padded with a zero-width space, because Discord rejects it (`discord-ipc.md` §5).
 - The file name of an untitled editor is its title (e.g. `Untitled-1`).
 
@@ -132,7 +135,7 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 
 - `discordPresence.hiddenWorkspaces` lists the workspaces where the activity is hidden. The matching is in `src/presence/hiddenWorkspaces.ts`.
   - An item containing `/` or `\` is a path; any other item is a name. Items are trimmed, and empty items are ignored.
-  - Name: compared with `vscode.workspace.name` (the name in `In <workspace name>`), ignoring case.
+  - Name: compared with the workspace name (5.1, the name in `In <workspace name>`) and with `vscode.workspace.name`, ignoring case. The label is compared too, so that an item written as `proj (Workspace)` keeps hiding the workspace.
   - Path: compared with the `fsPath` of each workspace folder and of the `.code-workspace` file (except an `untitled` one). Both sides use `/` as the separator, drop trailing separators, and ignore case, so the comparison errs toward hiding. A folder inside a listed path also matches; `C:\work` does not match `C:\workshop`.
   - Remote folders match their remote path (e.g. `/home/me/app`). Their `fsPath` on Windows uses `\`, which the normalization handles.
   - A multi-root workspace is hidden when any of its folders matches. A window without a folder or workspace never matches.
@@ -266,11 +269,12 @@ vscode-discord-presence/
     │   ├── connectionStatus.ts    # status bar state and text (pure)
     │   ├── hiddenWorkspaces.ts    # hiddenWorkspaces matching (pure)
     │   ├── presenceController.ts  # editor and focus events, idle, debounce, throttle
-    │   └── windowLeader.ts        # which window is connected (globalState)
+    │   ├── windowLeader.ts        # which window is connected (globalState)
+    │   └── workspaceName.ts       # workspace name from its location (pure)
     └── test/                      # unit tests for the pure modules
 ```
 
-- `frame.ts`, `activityBuilder.ts`, `connectionStatus.ts`, `hiddenWorkspaces.ts`, and `languages.ts` do not import `vscode`, so they can be tested with plain values.
+- `frame.ts`, `activityBuilder.ts`, `connectionStatus.ts`, `hiddenWorkspaces.ts`, `workspaceName.ts`, and `languages.ts` do not import `vscode`, so they can be tested with plain values.
 - `discordIpc.ts` knows nothing about editors; `presenceController.ts` knows nothing about frames.
 
 `package.json`:
@@ -287,6 +291,7 @@ vscode-discord-presence/
   - `languages.ts`: lookup and fallback, and that every `icon` (plus `vscode`) has a PNG in `assets/icons/`.
   - `connectionStatus.ts`: the order of the states in 9.1, each IPC state, and the tooltip text.
   - `hiddenWorkspaces.ts`: name and path matching, separators and case, folders inside a path, remote paths, multi-root workspaces, and a window without a workspace.
+  - `workspaceName.ts`: a folder, a saved and an unsaved workspace, remote locations, root folders, and a window without a workspace.
 - Manual tests: F5 (Extension Development Host) with the Discord desktop app running. Each milestone in 13 lists what to check.
 - There are no automated tests against a real Discord client.
 

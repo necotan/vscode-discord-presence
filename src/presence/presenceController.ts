@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { CONFIG_SECTION, getIdleTimeoutMs, getPresenceSettings } from '../config';
+import { CONFIG_SECTION, getIdleTimeoutMs, getPresenceSettings, getWorkspaceName } from '../config';
 import type { Activity } from '../ipc/discordIpc';
 import { getLanguage } from '../languages';
 import { buildActivity, EditorInfo } from './activityBuilder';
@@ -160,7 +160,7 @@ export class PresenceController implements vscode.Disposable {
 			{
 				idle: this.idle,
 				editor: this.editor,
-				workspaceName: vscode.workspace.name,
+				workspaceName: getWorkspaceName(),
 				startedAt: this.startedAt,
 			},
 			getPresenceSettings(),

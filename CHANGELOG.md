@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+- Fixed the workspace name including the remote connection (such as the SSH host) or `(Workspace)`. It is now the folder name or the name of the `.code-workspace` file.
+- Fixed `hiddenWorkspaces` not matching that name in those windows.
+- An unsaved multi-root workspace no longer shows a workspace name.
+
 ## [0.3.0] - 2026-11-04
 
 - Added a status bar item that shows whether this window is shown on Discord, with a menu to turn it off or on, reconnect, show the log, or open the settings.

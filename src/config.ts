@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import type { PresenceSettings } from './presence/activityBuilder';
 import { isHiddenWorkspace } from './presence/hiddenWorkspaces';
+import { resolveWorkspaceName } from './presence/workspaceName';
 
 export const DEFAULT_CLIENT_ID = '1566793053941923881';
 
@@ -35,6 +36,11 @@ export function getIdleTimeoutMs(): number {
 	return Math.max(0, minutes) * 60_000;
 }
 
+export function getWorkspaceName(): string | undefined {
+	const { workspaceFile, workspaceFolders } = vscode.workspace;
+	return resolveWorkspaceName(workspaceFile, (workspaceFolders ?? []).map((folder) => folder.uri));
+}
+
 export function getPresenceSettings(): PresenceSettings {
 	const config = getConfig();
 	const masked = getHiddenMatch() === 'mask';
@@ -61,13 +67,15 @@ export function isCurrentWorkspaceHidden(): boolean {
 	if (entries.length === 0) {
 		return false;
 	}
-	const { name, workspaceFolders, workspaceFile } = vscode.workspace;
+	const { name: label, workspaceFolders, workspaceFile } = vscode.workspace;
 	const paths = (workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
 	// 保存前のマルチルートワークスペースは untitled スキームの仮の場所なので、パスとして比べない
 	if (workspaceFile && workspaceFile.scheme !== 'untitled') {
 		paths.push(workspaceFile.fsPath);
 	}
-	return isHiddenWorkspace({ name, paths }, entries);
+	// ラベルのまま書かれた設定が一致しなくなると、隠していたものが表示されてしまう
+	const names = [getWorkspaceName(), label].filter((name): name is string => name !== undefined);
+	return isHiddenWorkspace({ names, paths }, entries);
 }
 
 export function getHiddenMatch(): HiddenWorkspaceMode | undefined {

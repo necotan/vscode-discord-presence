@@ -98,7 +98,7 @@ Only to the Discord app on your own machine, through its local named pipe:
 
 - The base name of the active file (e.g. `extension.ts`)
 - The language name
-- The workspace name
+- The workspace name (the folder name, or the name of the `.code-workspace` file)
 - The time the window opened
 
 Never sent: full paths, file contents, Git information, or anything else. Everything shown is visible to anyone who can see your Discord profile, so use the settings above to hide what should stay private.

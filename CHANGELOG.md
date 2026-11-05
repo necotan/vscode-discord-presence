@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.1] - 2026-11-05
 
 - Fixed the workspace name including the remote connection (such as the SSH host) or `(Workspace)`. It is now the folder name or the name of the `.code-workspace` file.
 - Fixed `hiddenWorkspaces` not matching that name in those windows.

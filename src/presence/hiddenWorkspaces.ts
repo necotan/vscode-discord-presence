@@ -1,10 +1,10 @@
 export interface WorkspaceIdentity {
-	name: string | undefined;
+	names: readonly string[];
 	paths: string[];
 }
 
 export function isHiddenWorkspace(workspace: WorkspaceIdentity, entries: readonly string[]): boolean {
-	const name = workspace.name?.toLowerCase();
+	const names = workspace.names.map((name) => name.toLowerCase());
 	const paths = workspace.paths.map(normalizePath);
 	return entries.some((raw) => {
 		const entry = raw.trim();
@@ -13,7 +13,7 @@ export function isHiddenWorkspace(workspace: WorkspaceIdentity, entries: readonl
 		}
 		// ワークスペース名は区切り文字を含まないため、区切り文字の有無で名前とパスを見分ける
 		if (!/[\\/]/.test(entry)) {
-			return entry.toLowerCase() === name;
+			return names.includes(entry.toLowerCase());
 		}
 		const base = normalizePath(entry);
 		return paths.some((path) => path === base || path.startsWith(`${base}/`));

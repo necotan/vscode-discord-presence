@@ -131,13 +131,21 @@ npm run compile
 
 Press `F5` in VS Code to open an Extension Development Host with the extension loaded.
 
+### Git Hooks (for committing changes)
+
+Run this once after cloning. `pre-commit` runs lint and the build, and `commit-msg` checks the format of the first line.
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ### npm Scripts
 
 | Command | Description |
 |---|---|
 | `npm run compile` | Build with `tsc` into `out/` |
 | `npm run watch` | Rebuild on change |
-| `npm run lint` | ESLint |
+| `npm run lint` | ESLint (warnings fail too) and the `package.json` consistency check |
 | `npm test` | Unit tests in the extension host |
 | `npm run generate:icons` | Regenerate `assets/icons/*.png` from devicon (needs Chrome or Edge) |
 

@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import * as net from 'net';
 import { encodeFrame, FrameDecoder, Opcode, RawFrame } from './frame';
-import { getIpcPaths } from './getIpcPath';
+import { getIpcPaths, UNSUPPORTED_PLATFORM_MESSAGE } from './getIpcPath';
 
 const RETRY_INTERVAL_MS = 15_000;
 // deactivate に使える時間は短いため、クリアの応答を待つのはこの時間まで
@@ -120,7 +120,7 @@ export class DiscordIpcClient {
 		}
 		const paths = (this.options.getPaths ?? getIpcPaths)();
 		if (paths.length === 0) {
-			this.options.logger.error(`Unsupported platform: ${process.platform}`);
+			this.options.logger.error(UNSUPPORTED_PLATFORM_MESSAGE);
 			return;
 		}
 		for (const path of paths) {

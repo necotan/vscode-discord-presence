@@ -8,3 +8,6 @@ node_modules
 /docs/*
 !/docs/requirements.md
 !/docs/discord-ipc.md
+
+# Stop フックが合格済みの変更内容を記録するファイル
+.claude/hooks/.verified

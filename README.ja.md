@@ -131,13 +131,21 @@ npm run compile
 
 VS Code で `F5` を押すと、拡張機能を読み込んだ拡張機能開発ホストが開きます。
 
+### Git フック（変更をコミットする場合）
+
+クローン後に一度だけ実行します。`pre-commit` が lint とビルドを、`commit-msg` が 1 行目の書式を検査します。
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ### npm スクリプト
 
 | コマンド | 説明 |
 |---|---|
 | `npm run compile` | `tsc` で `out/` にビルドする |
 | `npm run watch` | 変更のたびにビルドする |
-| `npm run lint` | ESLint |
+| `npm run lint` | ESLint（警告も失敗にする）と `package.json` の整合性の検査 |
 | `npm test` | 拡張機能ホストでユニットテストを実行する |
 | `npm run generate:icons` | devicon から `assets/icons/*.png` を作り直す（Chrome または Edge が必要） |
 

@@ -164,7 +164,7 @@ The extension sends data only to the Discord desktop app on the same machine, ov
 - A language without `icon` uses `vscode.png`. The extension does not check whether a URL exists (that would need a network request).
 - Source: devicon `v2.17.0` (MIT), the `-original` SVG, or `-plain` when there is none. The VS Code logo is devicon `vscode`. The logos themselves are trademarks of their owners; the README states this.
   - `v2.18.0` was skipped because it was only 9 days old when the icons were made.
-- Format: PNG, 512×512, transparent background, the logo drawn at 448×448 in the center so that Discord's rounded corners do not cut it.
+- Format: PNG, 512x512, transparent background, the logo drawn at 448x448 in the center so that Discord's rounded corners do not cut it.
   - Black logos (Rust, Markdown, etc.) are hard to see on Discord's dark theme. Accepted for now; add a background in the script if it is a problem.
 - Generation: `npm run generate:icons` reads the `icon` names in `src/languages.ts`, adds `vscode`, and writes `assets/icons/<icon>.png` and `assets/icons/LICENSE-devicon.txt` (MIT requires the notice with copies).
   - Windows: the browser process returns before the PNG is written, so the script waits until the file exists and its size stops changing. Each icon uses its own temporary profile.
@@ -259,13 +259,13 @@ vscode-discord-presence/
     ├── extension.ts               # activate / deactivate, wiring only
     ├── config.ts                  # settings, DEFAULT_CLIENT_ID
     ├── statusBar.ts               # status bar item and its menu
-    ├── languages.ts               # languageId → display name and icon
+    ├── languages.ts               # languageId -> display name and icon
     ├── ipc/
     │   ├── getIpcPath.ts          # pipe path per OS (Windows only for now)
     │   ├── frame.ts               # frame encode/decode with buffering (pure)
     │   └── discordIpc.ts          # connect, handshake, send, reconnect
     ├── presence/
-    │   ├── activityBuilder.ts     # state + settings → activity (pure), ICON_BASE_URL
+    │   ├── activityBuilder.ts     # state + settings -> activity (pure), ICON_BASE_URL
     │   ├── connectionStatus.ts    # status bar state and text (pure)
     │   ├── hiddenWorkspaces.ts    # hiddenWorkspaces matching (pure)
     │   ├── presenceController.ts  # editor and focus events, idle, debounce, throttle
@@ -314,7 +314,7 @@ Each milestone ends with manual test steps for the user. The next one starts aft
 
 1. **IPC connection**: connect to the pipe, handshake, receive `READY`, show a fixed test activity. Remove the `helloWorld` template.
 2. **Basic display**: show the active file name, `languageId`, workspace name, and elapsed time; switching tabs updates the activity through the debounce and throttle.
-3. **Idle and multiple windows**: implement 5.2–5.5 and run the multi-window live test.
+3. **Idle and multiple windows**: implement 5.2-5.5 and run the multi-window live test.
 4. **Settings and commands**: implement 7 and 8; setting changes apply at once.
 5. **Language names and icons**: add the map and icon images; confirm the raw URLs display in Discord.
 6. **Distribution**: README, `package.json` fields, `.vscodeignore`, build the `.vsix`.

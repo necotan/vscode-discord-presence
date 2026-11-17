@@ -66,7 +66,7 @@ Until `READY`, activity updates are not sent. `discordIpc.ts` drops them; `prese
 
 ## 5. Activity Object
 
-Built by `activityBuilder.ts` (`requirements.md` §5.1–5.2). Only these fields are used.
+Built by `activityBuilder.ts` (`requirements.md` §5.1-5.2). Only these fields are used.
 
 | Field | Type | Notes |
 |---|---|---|

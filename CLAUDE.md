@@ -6,6 +6,12 @@
 - Commit messages: first line in English, all following lines in Japanese.
 - Write code comments in Japanese.
 - Use English for variable names, function names, file names, setting keys, and command IDs.
+- In docs, code comments, and commit messages, use ASCII instead of these symbols. This does not apply to UI text.
+  - Arrows: `->` `<-` `=>` `<=>` (not `→` `←` `⇒` `⇔`)
+  - Dashes and ellipsis: `-` (not `—` `–`), `...` (not `…`)
+  - Math: `x` (not `×`), `~` (not `≒`), `>=` `<=` (not `≥` `≤`)
+  - Quotes: `"` `'` (not `“ ”` `‘ ’`)
+  - Lists and marks: `1.` `2.` (not `①` `②`), `OK` / `NG` or words (not `✓` `✗` or emoji)
 
 ## Project
 
@@ -31,14 +37,14 @@ The specs are the source of truth for what to build; read the relevant section b
 - Run `npm run lint` and `npm run compile`; the git `pre-commit` hook runs both. They enforce the import, network, platform, and privacy rules marked "ESLint" below. `scripts/checkManifest.mjs` fails when `package.json` (`dependencies`, `extensionKind`, settings, commands) disagrees with `src/`, `assets/icons/`, both READMEs, or `docs/requirements.md`.
 - If a file that has a test in `src/test/` changed, run `npm test`.
 - If an `icon` was added to `src/languages.ts`, run `npm run generate:icons` and commit the new PNG.
-- If settings or commands changed, update the descriptions in `docs/requirements.md` §7–8 and both READMEs; the script checks only that each key and command title appears.
+- If settings or commands changed, update the descriptions in `docs/requirements.md` §7-8 and both READMEs; the script checks only that each key and command title appears.
 
 ## Layout
 
 - `src/extension.ts`: `activate` / `deactivate`; wires the modules together only.
 - `src/statusBar.ts`: the status bar item and its menu.
 - `src/config.ts`: reads settings; holds `DEFAULT_CLIENT_ID`. `ICON_BASE_URL` is in `activityBuilder.ts`, which must not import `config.ts` (it imports `vscode`).
-- `src/languages.ts`: `languageId` → display name and icon name.
+- `src/languages.ts`: `languageId` -> display name and icon name.
 - `src/ipc/`: Discord IPC client (`getIpcPath.ts`, `frame.ts`, `discordIpc.ts`).
 - `src/presence/`: `activityBuilder.ts` (pure), `connectionStatus.ts` (pure, status bar state and text), `hiddenWorkspaces.ts` (pure, `hiddenWorkspaces` matching), `workspaceName.ts` (pure, the workspace name sent to Discord), `presenceController.ts` (VS Code events, idle, throttling), and `windowLeader.ts` (only the last focused window connects).
 - `src/test/`: unit tests; `fakeDiscord.ts` is a fake Discord IPC server for them. `assets/icons/`: generated icon PNGs served to Discord from GitHub raw URLs; do not edit by hand. `scripts/generateIcons.mjs`: builds them.

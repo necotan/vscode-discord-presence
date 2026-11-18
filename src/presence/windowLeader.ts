@@ -8,7 +8,7 @@ const POLL_MS = 1_000;
 // 前のウィンドウが POLL_MS ごとの確認で接続を切るのを待ってから接続する
 const HANDOVER_DELAY_MS = 1_500;
 
-// フォーカスのイベントはテストから発火できず、待ち時間も長いため差し替えられるようにする
+/** フォーカスのイベントはテストから発火できず、待ち時間も長いため差し替えられるようにする */
 export interface WindowLeaderOptions {
 	focus?: Pick<typeof vscode.window, 'state' | 'onDidChangeWindowState'>;
 	pollMs?: number;

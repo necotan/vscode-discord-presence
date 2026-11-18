@@ -17,8 +17,10 @@ export function isEnabled(): boolean {
 
 export type ToggleConfig = Pick<vscode.WorkspaceConfiguration, 'get' | 'inspect' | 'update'>;
 
-// ユーザー設定だけを書き換えると、ワークスペース設定で上書きされているときに切り替わらないため、
-// 値が書かれているいちばん強い場所を書き換える。書き換えた場所を返す
+/**
+ * ユーザー設定だけを書き換えると、ワークスペース設定で上書きされているときに切り替わらないため、
+ * 値が書かれているいちばん強い場所を書き換える。書き換えた場所を返す
+ */
 export async function toggleEnabled(config: ToggleConfig = getConfig()): Promise<vscode.ConfigurationTarget> {
 	const target = config.inspect<boolean>('enabled')?.workspaceValue !== undefined
 		? vscode.ConfigurationTarget.Workspace
@@ -55,7 +57,7 @@ export function getPresenceSettings(): PresenceSettings {
 
 export type HiddenWorkspaceMode = 'hide' | 'mask';
 
-// 不正な値は、何も送らない側に倒す
+/** 不正な値は、何も送らない側に倒す */
 export function getHiddenWorkspaceMode(): HiddenWorkspaceMode {
 	return getConfig().get<string>('hiddenWorkspaceMode') === 'mask' ? 'mask' : 'hide';
 }
@@ -83,7 +85,7 @@ export function getHiddenMatch(): HiddenWorkspaceMode | undefined {
 	return isCurrentWorkspaceHidden() ? getHiddenWorkspaceMode() : undefined;
 }
 
-// hide のときは接続しないことで、ほかのウィンドウの表示も残さない（requirements.md §5.6）
+/** hide のときは接続しないことで、ほかのウィンドウの表示も残さない（requirements.md §5.6） */
 export function isHiddenByHideMode(): boolean {
 	return getHiddenMatch() === 'hide';
 }

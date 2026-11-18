@@ -19,7 +19,7 @@ export interface Activity {
 	};
 }
 
-// vscode.LogOutputChannel をそのまま渡せる形にして、このモジュールを vscode に依存させない
+/** vscode.LogOutputChannel をそのまま渡せる形にして、このモジュールを vscode に依存させない */
 export interface Logger {
 	debug(message: string): void;
 	info(message: string): void;
@@ -34,7 +34,7 @@ export interface DiscordIpcOptions {
 	logger: Logger;
 	onReady: () => void;
 	onStateChange: (state: IpcState) => void;
-	// テストで本物の Discord につながず、再試行を待たずに済むよう差し替えられるようにする
+	/** テストで本物の Discord につながず、再試行を待たずに済むよう差し替えられるようにする */
 	getPaths?: () => string[];
 	retryIntervalMs?: number;
 }

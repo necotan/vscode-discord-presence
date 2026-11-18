@@ -14,7 +14,7 @@ export interface StatusView {
 	tooltip: string;
 }
 
-// 表示されない理由のうち、ユーザーが自分で変えられるものを先に出す
+/** 表示されない理由のうち、ユーザーが自分で変えられるものを先に出す */
 export function resolveStatus(input: StatusInput): ConnectionStatus {
 	if (!input.enabled) {
 		return 'disabled';

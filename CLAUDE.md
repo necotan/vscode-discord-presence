@@ -95,6 +95,7 @@ The specs are the source of truth for what to build; read the relevant section b
 - Write only why: the reason for a choice, workarounds for VS Code API or Discord client quirks, and protocol constraints the code alone does not show.
 - Do not write what the code or names already say (e.g. "接続処理", "設定を読み込む", "〜の関数"). If there is no why to explain, write no comment.
 - No decorative characters such as `---`, `===`, `***`.
+- Use `/** */` above an exported function, class, interface, or interface field when callers must know something to use it correctly: rules they must follow, what the return value means, or side effects. VS Code shows it on hover at call sites. Put implementation reasons in `//` inside the function, next to the code they explain. Use `//` for all other comments.
 
 ## Git workflow
 

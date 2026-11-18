@@ -7,7 +7,7 @@ export interface WorkspaceLocation {
 	path: string;
 }
 
-// vscode.workspace.name は表示用のラベルで Remote の接続先などが付くため、場所から名前を作る（requirements.md 5.1）
+/** vscode.workspace.name は表示用のラベルで Remote の接続先などが付くため、場所から名前を作る（requirements.md 5.1） */
 export function resolveWorkspaceName(
 	workspaceFile: WorkspaceLocation | undefined,
 	folders: readonly WorkspaceLocation[],

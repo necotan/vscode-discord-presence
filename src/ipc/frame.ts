@@ -26,8 +26,10 @@ export function encodeFrame(opcode: Opcode, payload: object): Buffer {
 	return frame;
 }
 
-// 受信データは任意の位置で分割・結合されて届くため、完全なフレームだけを取り出して残りは次回に持ち越す。
-// JSON の解析はここでは行わず、失敗時のログ出力を呼び出し側に任せる
+/**
+ * 受信データは任意の位置で分割・結合されて届くため、完全なフレームだけを取り出して残りは次回に持ち越す。
+ * JSON の解析はここでは行わず、失敗時のログ出力を呼び出し側に任せる
+ */
 export class FrameDecoder {
 	private buffer: Buffer = Buffer.alloc(0);
 

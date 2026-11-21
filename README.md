@@ -149,6 +149,31 @@ git config core.hooksPath .githooks
 | `npm test` | Unit tests in the extension host |
 | `npm run generate:icons` | Regenerate `assets/icons/*.png` from devicon (needs Chrome or Edge) |
 
+### Project Structure
+
+```text
+/
+├── src/
+│   ├── extension.ts         # Entry point (activate / deactivate, command registration)
+│   ├── config.ts            # Reading and toggling the discordPresence.* settings
+│   ├── languages.ts         # Language ID -> display name and icon
+│   ├── statusBar.ts         # Status bar item and its menu
+│   ├── ipc/                 # Discord IPC (discordIpc.ts, frame.ts, getIpcPath.ts)
+│   ├── presence/            # presenceController.ts, activityBuilder.ts, windowLeader.ts, hiddenWorkspaces.ts, workspaceName.ts, connectionStatus.ts
+│   └── test/                # Unit tests (*.test.ts) and fakeDiscord.ts (a fake Discord IPC server)
+├── assets/
+│   └── icons/               # Language icons (PNG) that Discord loads from GitHub, and the devicon license
+├── scripts/                 # generateIcons.mjs, checkManifest.mjs (package.json consistency check)
+├── docs/                    # Specs (requirements.md, discord-ipc.md)
+├── .github/workflows/       # CI (npm test on Windows)
+├── .githooks/               # pre-commit, commit-msg
+├── .vscode/                 # F5 launch and build tasks
+├── .vscodeignore            # Files left out of the .vsix
+├── .vscode-test.mjs         # npm test settings
+├── CHANGELOG.md
+└── package.json             # Extension manifest (settings, commands)
+```
+
 ### Packaging
 
 ```bash

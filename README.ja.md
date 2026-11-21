@@ -149,6 +149,31 @@ git config core.hooksPath .githooks
 | `npm test` | 拡張機能ホストでユニットテストを実行する |
 | `npm run generate:icons` | devicon から `assets/icons/*.png` を作り直す（Chrome または Edge が必要） |
 
+### プロジェクト構成
+
+```text
+/
+├── src/
+│   ├── extension.ts         # エントリポイント（activate / deactivate、コマンドの登録）
+│   ├── config.ts            # discordPresence.* の設定の読み込みと切り替え
+│   ├── languages.ts         # 言語 ID から表示名とアイコンへの対応
+│   ├── statusBar.ts         # ステータスバーの項目とメニュー
+│   ├── ipc/                 # Discord IPC（discordIpc.ts, frame.ts, getIpcPath.ts）
+│   ├── presence/            # presenceController.ts, activityBuilder.ts, windowLeader.ts, hiddenWorkspaces.ts, workspaceName.ts, connectionStatus.ts
+│   └── test/                # ユニットテスト（*.test.ts）と fakeDiscord.ts（偽の Discord IPC サーバー）
+├── assets/
+│   └── icons/               # Discord が GitHub から読み込む言語アイコン（PNG）と devicon のライセンス
+├── scripts/                 # generateIcons.mjs, checkManifest.mjs（package.json の整合性の検査）
+├── docs/                    # 仕様書（requirements.md, discord-ipc.md）
+├── .github/workflows/       # CI（Windows で npm test）
+├── .githooks/               # pre-commit, commit-msg
+├── .vscode/                 # F5 での起動とビルドのタスク
+├── .vscodeignore            # .vsix に含めないファイル
+├── .vscode-test.mjs         # npm test の設定
+├── CHANGELOG.md
+└── package.json             # 拡張機能のマニフェスト（設定、コマンド）
+```
+
 ### パッケージ化
 
 ```bash

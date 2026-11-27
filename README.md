@@ -117,6 +117,17 @@ The extension makes no network requests. Discord loads the icons from this repos
 
 ## Development
 
+### Tech Stack
+
+- **Language**: [TypeScript](https://www.typescriptlang.org/) (compiled with `tsc`, no bundler)
+- **Platform**: [VS Code Extension API](https://code.visualstudio.com/api)
+- **Discord Integration**: Discord RPC over local IPC (Windows named pipe via Node.js `net`), no runtime dependencies
+- **Icons**: [devicon](https://github.com/devicons/devicon) (converted to PNG with headless Chrome/Edge, served from raw.githubusercontent.com)
+- **Testing**: [Mocha](https://mochajs.org/) / [@vscode/test-cli](https://github.com/microsoft/vscode-test-cli) / [@vscode/test-electron](https://github.com/microsoft/vscode-test)
+- **Linting**: [ESLint](https://eslint.org/) / [typescript-eslint](https://typescript-eslint.io/)
+- **CI**: GitHub Actions (Windows)
+- **Packaging**: [@vscode/vsce](https://github.com/microsoft/vscode-vsce)
+
 ### Prerequisites
 
 - Node.js and npm

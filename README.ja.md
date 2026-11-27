@@ -117,6 +117,17 @@ Developer Portal でのほかの設定は不要です（アイコンは GitHub �
 
 ## 開発
 
+### 技術スタック
+
+- **Language**: [TypeScript](https://www.typescriptlang.org/)（`tsc` でコンパイル、バンドラーなし）
+- **Platform**: [VS Code Extension API](https://code.visualstudio.com/api)
+- **Discord Integration**: ローカル IPC 経由の Discord RPC（Node.js の `net` で Windows の名前付きパイプに接続）、ランタイム依存なし
+- **Icons**: [devicon](https://github.com/devicons/devicon)（ヘッドレスの Chrome/Edge で PNG に変換し、raw.githubusercontent.com から配信）
+- **Testing**: [Mocha](https://mochajs.org/) / [@vscode/test-cli](https://github.com/microsoft/vscode-test-cli) / [@vscode/test-electron](https://github.com/microsoft/vscode-test)
+- **Linting**: [ESLint](https://eslint.org/) / [typescript-eslint](https://typescript-eslint.io/)
+- **CI**: GitHub Actions（Windows）
+- **Packaging**: [@vscode/vsce](https://github.com/microsoft/vscode-vsce)
+
 ### 前提条件
 
 - Node.js と npm
